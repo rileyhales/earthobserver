@@ -15,8 +15,8 @@ dependencies = []
 setup(
     name=release_package,
     version='0.0.1',
-    tags='&quot;Earth Observations&quot;, &quot;Time Series&quot;, &quot;Maps&quot;, &quot;Charts&quot;, &quot;Downloads&quot;',
-    description='A tethys app for visualizing Earth Observation r(EO) products  including GLDAS and GFS',
+    tags='Earth Observations, Time Series, GLDAS, GFS',
+    description='A tethys app for visualizing Earth Observation (EO) products including GLDAS and GFS',
     long_description='',
     keywords='',
     author='Riley Hales',

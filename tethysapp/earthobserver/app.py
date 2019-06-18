@@ -1,6 +1,8 @@
 from tethys_sdk.base import TethysAppBase, url_map_maker
 from tethys_sdk.app_settings import CustomSetting
 
+# todo update the gfs download script with the latest ffgs tool workflow
+
 
 class Earthobserver(TethysAppBase):
     """
@@ -11,7 +13,7 @@ class Earthobserver(TethysAppBase):
     icon = 'earthobserver/images/globe.png'
     package = 'earthobserver'
     root_url = 'earthobserver'
-    color = '#004fed'
+    color = '#002366'
     description = 'A tethys app for visualizing Earth Observation (EO) products including GLDAS and GFS.\n' \
                   'View time-animated maps\n' \
                   'Extract and download time series data at a point, polygon, or region level\n'
@@ -20,7 +22,7 @@ class Earthobserver(TethysAppBase):
     feedback_emails = []
     github = 'https://github.com/rileyhales/earthobserver'
     youtube = 'https://youtube.com'
-    version = 'initial development - 6 June 2019'
+    version = 'Development - 18 June 2019'
 
     def url_maps(self):
         """
@@ -34,6 +36,13 @@ class Earthobserver(TethysAppBase):
                 name='home',
                 url='earthobserver',
                 controller='earthobserver.controllers.home'
+            ),
+
+            # url map for calling the gfs downloading workflow
+            urlmap(
+                name='updateGFS',
+                url='earthobserver/updateGFS',
+                controller='earthobserver.controllers.update_gfs'
             ),
 
             # url maps for ajax calls

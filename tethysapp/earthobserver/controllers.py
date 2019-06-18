@@ -3,7 +3,8 @@ from django.shortcuts import render
 from tethys_sdk.gizmos import SelectInput, RangeSlider
 
 from .app import Earthobserver as App
-from .options import gldas_variables, timecoverage, get_charttypes, gfs_variables, wms_colors, geojson_colors, currentgfs
+from .options import gldas_variables, timecoverage, get_charttypes, gfs_variables, wms_colors, geojson_colors,\
+    currentgfs
 
 
 @login_required()
@@ -150,3 +151,9 @@ def home(request):
     }
 
     return render(request, 'earthobserver/home.html', context)
+
+
+@login_required()
+def update_gfs():
+
+    return

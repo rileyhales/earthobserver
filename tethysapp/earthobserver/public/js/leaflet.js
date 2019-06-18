@@ -68,7 +68,46 @@ const bounds = {
         'Wind_f_inst': '0,17'
     },
     'gfs': {
-
+        'al': '0,88',
+        '4lftx': '-16,29',
+        'cfrzr': '0,1',
+        'cicep': '0,0',
+        'crain': '0,1',
+        'csnow': '0,1',
+        'cape': '0,4687',
+        'cin': '-1128,1',
+        'acpcp': '0,41',
+        'cprat': '0,1',
+        'dlwrf': '59,516',
+        'dswrf': '0,981',
+        'fldcp': '0,1',
+        'landn': '0,1',
+        'lsm': '0,1',
+        'lhtfl': '-110,652',
+        'v-gwd': '-17,15',
+        'uflx': '-4,3',
+        'vflx': '-3,4',
+        'orog': '-237,6110',
+        'cpofp': '-51,100',
+        'hpbl': '16,6353',
+        'pevpr': '-35,2065',
+        'prate': '0,1',
+        'siconc': '0,1',
+        'shtfl': '-227,541',
+        'sde': '0,3',
+        'SUNSD': '0,21600',
+        'lftx': '-13,45',
+        'sp': '48173,103796',
+        't': '203,350',
+        'tp': '0,100',
+        'ulwrf': '95,741',
+        'uswrf': '0,765',
+        'vis': '0,24100',
+        'sdwe': '0,434',
+        'watr': '0,44',
+        'wilt': '0,1',
+        'gust': '0,33',
+        'u-gwd': '-7,7'
     }
 };
 
@@ -93,7 +132,7 @@ function newLayer() {
         opacity: $("#opacity_raster").val(),
         BGCOLOR: '0x000000',
         styles: 'boxfill/' + $('#colorscheme').val(),
-        // colorscalerange: bounds[model][layer],
+        colorscalerange: bounds[model][layer],
     });
 
     return L.timeDimension.layer.wms(wmsLayer, {
@@ -118,7 +157,7 @@ legend.onAdd = function (mapObj) {
         layer = $("#gfs_vars").val()
     }
     let div = L.DomUtil.create('div', 'legend');
-    let url = wmsurl + "?REQUEST=GetLegendGraphic&LAYER=" + layer + "&PALETTE=" + $('#colorscheme').val();// + "&COLORSCALERANGE=" + bounds[model][layer];
+    let url = wmsurl + "?REQUEST=GetLegendGraphic&LAYER=" + layer + "&PALETTE=" + $('#colorscheme').val() + "&COLORSCALERANGE=" + bounds[model][layer];
     div.innerHTML = '<img src="' + url + '" alt="legend" style="width:100%; float:right;">';
     return div
 };
@@ -133,7 +172,13 @@ function layerPopups(feature, layer) {
 // declare a placeholder layer for all the geojson layers you want to add
 let jsonparams = {
     onEachFeature: layerPopups,
-    style: {color: $("#gjColor").val(), opacity: $("#gjOpacity").val(), weight: $("#gjWeight").val(), fillColor: $("#gjFillColor").val(), fillOpacity: $("#gjFillOpacity").val()}
+    style: {
+        color: $("#gjColor").val(),
+        opacity: $("#gjOpacity").val(),
+        weight: $("#gjWeight").val(),
+        fillColor: $("#gjFillColor").val(),
+        fillOpacity: $("#gjFillOpacity").val()
+    }
 };
 let africa = L.geoJSON(false, jsonparams);
 let asia = L.geoJSON(false, jsonparams);

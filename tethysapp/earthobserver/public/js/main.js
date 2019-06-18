@@ -71,7 +71,6 @@ let layerObj = newLayer();              // adds the wms raster layer
 let controlsObj = makeControls();       // the layer toggle controls top-right corner
 legend.addTo(mapObj);                   // add the legend graphic to the map
 updateGEOJSON();                        // asynchronously get geoserver wfs/geojson data for the regions
-styleGeoJSON();
 
 ////////////////////////////////////////////////////////////////////////  EVENT LISTENERS
 $("#model").change(function () {
@@ -93,17 +92,6 @@ $("#model").change(function () {
     legend.addTo(mapObj);
 });
 
-$("#dates").change(function () {
-    clearMap();
-    for (let i = 0; i < geojsons.length; i++) {
-        geojsons[i][0].addTo(mapObj)
-    }
-    layerObj = newLayer();
-    controlsObj = makeControls();
-    getDrawnChart(drawnItems);
-    legend.addTo(mapObj);
-});
-
 $("#gldas_vars").change(function () {
     clearMap();
     for (let i = 0; i < geojsons.length; i++) {
@@ -115,16 +103,26 @@ $("#gldas_vars").change(function () {
     legend.addTo(mapObj);
 });
 
+$("#dates").change(function () {
+    clearMap();
+    for (let i = 0; i < geojsons.length; i++) {
+        geojsons[i][0].addTo(mapObj)
+    }
+    layerObj = newLayer();
+    controlsObj = makeControls();
+    getDrawnChart(drawnItems);
+    legend.addTo(mapObj);
+});
+
 $("#gfs_vars").change(function () {
-    // todo
-    // clearMap();
-    // for (let i = 0; i < geojsons.length; i++) {
-    //     geojsons[i][0].addTo(mapObj)
-    // }
-    // layerObj = newLayer();
-    // controlsObj = makeControls();
-    // getDrawnChart(drawnItems);
-    // legend.addTo(mapObj);
+    clearMap();
+    for (let i = 0; i < geojsons.length; i++) {
+        geojsons[i][0].addTo(mapObj)
+    }
+    layerObj = newLayer();
+    controlsObj = makeControls();
+    getDrawnChart(drawnItems);
+    legend.addTo(mapObj);
 });
 
 
@@ -164,6 +162,6 @@ $("#gjFillOpacity").change(function () {
 $('#charttype').change(function () {
     makechart();
 });
-$("#displaytoggle").click(function() {
-    $("#displayoptions").toggle();
+$("#display").click(function() {
+    $("#displayopts").toggle();
 });

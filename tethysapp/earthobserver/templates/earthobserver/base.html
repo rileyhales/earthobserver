@@ -7,7 +7,6 @@
 {% block title %}{{ tethys_app.name }}{% endblock %}
 {% block app_icon %}<img src="{% static tethys_app.icon %}">{% endblock %}
 {% block app_title %}{{ tethys_app.name }}{% endblock %}
-{% block app_content %}{% endblock %}
 
 <div class="header-button glyphicon-button" data-toggle="tooltip" data-placement="bottom" title="How To Use This Page">
   <a data-toggle="modal" data-target="#help-modal"><span class="glyphicon glyphicon-question-sign"></span></a>
@@ -37,9 +36,9 @@
   <li class="title">Custom Region Shapefile</li>
   <p>This is where the user will upload a shapefile with commands to view it on the map and get their own timeseries out</p>
 
-  <li class="title">Map Styling Options</li>
-  <a class="btn btn-primary btn-block" id="displaytoggle">Click to View Options</a>
-  <div id="displayoptions" style="display: none; overflow-y: auto; border-style: solid; border-width: medium; border-spacing: 5px">
+  <li class="title" id="display" role="button">Click for Map Styling Controls</li>
+{#  <a class="btn btn-primary btn-block" >Click to View Options</a>#}
+  <div id="displayopts" style="display: none; overflow-y: auto; border-style: solid; border-width: medium; border-spacing: 5px">
     {% gizmo select_input colorscheme %}
     {% gizmo range_slider opacity %}
     {% gizmo select_input gjColor %}
