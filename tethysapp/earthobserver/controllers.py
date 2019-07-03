@@ -4,7 +4,7 @@ from tethys_sdk.gizmos import SelectInput, RangeSlider
 
 from .app import Earthobserver as App
 from .options import gldas_variables, timecoverage, get_charttypes, gfs_variables, wms_colors, geojson_colors,\
-    currentgfs, app_configuration, structure_byvars
+    currentgfs, app_configuration, structure_byvars, get_eodatamodels
 
 
 @login_required()
@@ -16,10 +16,7 @@ def home(request):
         display_text='Choose Earth Observation Data',
         name='model',
         multiple=False,
-        options=[
-            ('(Historical) NASA GLDAS (Global Land Data Assimilation System)', 'gldas'),
-            ('(Forecasted) NOAA GFS (Global Forecast System)', 'gfs')
-        ],
+        options=get_eodatamodels(),
         initial=False
     )
     context = {
@@ -46,10 +43,7 @@ def map(request):
         name='model',
         multiple=False,
         original=True,
-        options=[
-            ('GLDAS - Global Land Data Assimilation System', 'gldas'),
-            ('GFS - Global Forecast System', 'gfs')
-        ],
+        options=get_eodatamodels(),
     )
 
     gldas_vars = SelectInput(

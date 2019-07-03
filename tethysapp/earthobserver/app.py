@@ -4,6 +4,9 @@ from tethys_sdk.app_settings import CustomSetting
 # todo verify that the gldas shell works without credentials
 # todo add controls/page for running the data updating scripts
 # todo write about the different EO models
+# todo use hydroviewer hispaniola to learn how to accept shapefile upload and custom averaging
+# todo update controls for showing gfs data
+# todo separate the map controls for gldas and gfs (copy sfpt methods for request.post options)
 
 
 class Earthobserver(TethysAppBase):
@@ -65,6 +68,32 @@ class Earthobserver(TethysAppBase):
                 controller='earthobserver.ajax.get_shapeaverage',
             ),
 
+            # url maps for api calls
+            urlmap(
+                name='getcapabilities',
+                url='earthobserver/api/getcapabilities',
+                controller='earthobserver.api.getcapabilities',
+            ),
+            urlmap(
+                name='eodatamodels',
+                url='earthobserver/api/eodatamodels',
+                controller='earthobserver.api.eodatamodels',
+            ),
+            urlmap(
+                name='gldasvariables',
+                url='earthobserver/api/gldasvariables',
+                controller='earthobserver.api.gldasvariables',
+            ),
+            urlmap(
+                name='gldasdates',
+                url='earthobserver/api/gldasdates',
+                controller='earthobserver.api.gldasdates',
+            ),
+            urlmap(
+                name='gfsdate',
+                url='earthobserver/api/gfsdate',
+                controller='earthobserver.api.gfsdate',
+            ),
         )
         return url_maps
 

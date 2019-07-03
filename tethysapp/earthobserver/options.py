@@ -18,6 +18,13 @@ def app_configuration():
     }
 
 
+def get_eodatamodels():
+    return [
+            ('(Historical) NASA GLDAS (Global Land Data Assimilation System)', 'gldas'),
+            ('(Forecasted) NOAA GFS (Global Forecast System)', 'gfs')
+        ]
+
+
 def get_gfsdate():
     with open(os.path.join(App.get_app_workspace().path, 'gfstimestamp.txt'), 'r') as file:
         return file.read()

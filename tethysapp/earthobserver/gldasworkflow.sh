@@ -17,7 +17,7 @@ chmod -R 0755 $1
 mkdir -p $1/raw/
 cd $1/raw/
 
-cat $DIR/gldasurls.txt | tr -d '\r' | xargs -n 1 -P 4 curl -LJO -n -c ~/.urs_cookies -b ~/.urs_cookies
+cat $DIR/workspaces/app_workspace/gldasurls.txt | tr -d '\r' | xargs -n 1 -P 4 curl -LJO -n -c ~/.urs_cookies -b ~/.urs_cookies
 
 echo "Download Done"
 
