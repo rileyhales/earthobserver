@@ -3,41 +3,41 @@
 {% load tethys_gizmos %}
 {% load staticfiles %}
 
+{% block app_title %}{{ tethys_app.name }} - <strong>{{ modelname }}</strong>{% endblock %}
+{% block exit_button_override %}
+  <div class="header-button glyphicon-button" data-toggle="tooltip" data-placement="bottom" title="Back to Home Page">
+    <a href="{% url 'earthobserver:home' %}"><span class="glyphicon glyphicon-arrow-left"></span></a>
+  </div>
+{% endblock %}
+
 {% block app_navigation_items %}
   <li class="title">Data Controls</li>
-  {% gizmo select_input model %}
-  <hr>
-
-  <div id="gldascontrols">
-    {% gizmo select_input gldas_vars %}
+  {% if model == 'gldas' %}
+    {% gizmo select_input variables %}
     {% gizmo select_input dates %}
     {% gizmo select_input charttype %}
-  </div>
-  <div id="gfscontrols" style="display: none;">
-    {% gizmo select_input gfs_vars %}
-    {% gizmo select_input levels %}
-    {#    {% gizmo select_input heights %}#}
+  {% elif model == 'gfs' %}
     <div style="text-align: center; padding: 4px;"><strong>{{ gfsdate }}</strong></div>
-  </div>
-  <hr>
+    {% gizmo select_input variables %}
+    {% gizmo select_input levels %}
+    {# {% gizmo select_input heights %} #}
+  {% endif %}
+  <button class="btn btn-primary" role="button" id="usershape">Upload Shapefile and Get A Timeseries</button>
 
   <li class="title" id="display" role="button">Map Styling Controls</li>
   <div id="displayopts">
     {% gizmo select_input colorscheme %}
     {% gizmo range_slider opacity %}
-    {% gizmo select_input gjColor %}
-    {% gizmo range_slider gjOpacity %}
-    {% gizmo range_slider gjWeight %}
-    {% gizmo select_input gjFillColor %}
-    {% gizmo range_slider gjFillOpacity %}
+    {% gizmo select_input gjClr %}
+    {% gizmo range_slider gjOp %}
+    {% gizmo range_slider gjWt %}
+    {% gizmo select_input gjFlClr %}
+    {% gizmo range_slider gjFlOp %}
   </div>
-  <hr>
-
-  <li class="title">Custom Region Shapefile</li>
-  <p>This is where the user will upload a shapefile with commands to view it on the map and get their own timeseries out</p>
 {% endblock %}
 
 {% block app_actions %}
+  <div class="btn btn-default"><a href="{% url 'earthobserver:home' %}">Return to Home Page</a></div>
 {% endblock %}
 
 {% block app_content %}
@@ -64,8 +64,9 @@
 {% block scripts %}
   {{ block.super }}
   <script>
-    let threddsbase = "{{ customsettings.threddsurl }}";
-    let geoserverbase = "{{ customsettings.geoserverurl }}";
+      let threddsbase = "{{ customsettings.threddsurl }}";
+      let geoserverbase = "{{ customsettings.geoserverurl }}";
+      let model = "{{ model }}";
   </script>
 
   <!-- Allows csrf verification with AJAX -->

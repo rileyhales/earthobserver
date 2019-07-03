@@ -114,15 +114,13 @@ const bounds = {
 };
 
 function newLayer() {
-    let model = $("#model").val();
-    let wmsurl, layer;
+    let wmsurl;
     if (model === 'gldas') {
         wmsurl = threddsbase + 'gldas/' + $("#dates").val() + '.ncml';
-        layer = $("#gldas_vars").val()
     } else if (model === 'gfs') {
-        wmsurl = threddsbase + 'gfs/gfs.ncml';
-        layer = $("#gfs_vars").val()
+        wmsurl = threddsbase + 'gfs/' + $("#levels").val() + '_wms.ncml';
     }
+    let layer = $("#variables").val();
     let wmsLayer = L.tileLayer.wms(wmsurl, {
         // version: '1.3.0',
         layers: layer,
@@ -149,14 +147,12 @@ function newLayer() {
 ////////////////////////////////////////////////////////////////////////  LEGEND DEFINITIONS
 let legend = L.control({position: 'topright'});
 legend.onAdd = function () {
-    let wmsurl, layer;
-    let model = $("#model").val();
+    let layer = $("#variables").val();
+    let wmsurl;
     if (model === 'gldas') {
         wmsurl = threddsbase + 'gldas/' + $("#dates").val() + '.ncml';
-        layer = $("#gldas_vars").val()
     } else if (model === 'gfs') {
-        wmsurl = threddsbase + 'gfs/gfs.ncml';
-        layer = $("#gfs_vars").val()
+        wmsurl = threddsbase + 'gfs/' + $("#levels").val() + '_wms.ncml';
     }
     let div = L.DomUtil.create('div', 'legend');
     let url = wmsurl + "?REQUEST=GetLegendGraphic&LAYER=" + layer + "&PALETTE=" + $('#colorscheme').val() + "&COLORSCALERANGE=" + bounds[model][layer];
@@ -181,11 +177,11 @@ function layerPopups(feature, layer) {
 let jsonparams = {
     onEachFeature: layerPopups,
     style: {
-        color: $("#gjColor").val(),
-        opacity: $("#gjOpacity").val(),
-        weight: $("#gjWeight").val(),
-        fillColor: $("#gjFillColor").val(),
-        fillOpacity: $("#gjFillOpacity").val()
+        color: $("#gjClr").val(),
+        opacity: $("#gjOp").val(),
+        weight: $("#gjWt").val(),
+        fillColor: $("#gjFlClr").val(),
+        fillOpacity: $("#gjFlOp").val()
     }
 };
 let africa = L.geoJSON(false, jsonparams);
@@ -248,11 +244,11 @@ function updateGEOJSON() {
 function styleGeoJSON() {
     // determine the styling to apply
     let style = {
-        color: $("#gjColor").val(),
-        opacity: $("#gjOpacity").val(),
-        weight: $("#gjWeight").val(),
-        fillColor: $("#gjFillColor").val(),
-        fillOpacity: $("#gjFillOpacity").val(),
+        color: $("#gjClr").val(),
+        opacity: $("#gjOp").val(),
+        weight: $("#gjWt").val(),
+        fillColor: $("#gjFlClr").val(),
+        fillOpacity: $("#gjFlOp").val(),
     };
     // apply it to all the geojson layers
     for (let i = 0; i < geojsons.length; i++) {

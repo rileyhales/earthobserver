@@ -5,8 +5,10 @@
 
 {% block app_content %}
   <h1>Earth Observer Tool</h1>
-  {% gizmo select_input model %}
-  <button class="btn btn-success" role="button" id="submit">View Earth Observation Data</button>
+  <form id="eoForm" action="{% url 'earthobserver:map' %}" method="get">
+    {% gizmo select_input model %}
+    <button class="btn btn-success" role="button" form="eoForm" id="submit">View Earth Observation Data</button>
+  </form>
 
   <div class="modelinfo">
     <div id="gldas">

@@ -7,11 +7,63 @@ import rasterio
 import rasterstats
 import netCDF4
 import numpy
+import pandas
+import statistics
 
 from .options import app_configuration
+from .app import Earthobserver as App
 
 
-def pointchart(data):
+def getchart(data):
+    """
+    Determines the environment for generating a timeseries chart
+    :param data: a JSON object with params from the UI/API call
+    :return:
+    """
+    # input parameters
+    var = str(data['variable'])
+    coords = data['coords']
+    model = data['model']
+    seriestype = data['seriestype']
+
+    # environment settings
+    configs = app_configuration()
+    path = configs['threddsdatadir']
+    if model == 'gldas':
+        path = os.path.join(path, 'gldas', 'raw')
+    elif model == 'gfs':
+        path = os.path.join(path, 'gfs', configs['timestamp'], 'netcdfs')
+
+    # list the netcdfs to be processed
+    allfiles = os.listdir(path)
+    files = [nc for nc in allfiles if nc.endswith('.nc') or nc.endswith('.nc4')]
+    if model == 'gldas':
+        if data['time'] != 'alltimes':
+            files = [i for i in files if data['time'] in i]
+    if model == 'gfs':
+        files = [i for i in files if i.startswith(data['level'])]
+    files.sort()
+
+    if seriestype == 'Point':
+        values, units = pointchart(var, coords, path, files)
+        type = 'Values at a Point'
+    elif seriestype == 'Polygon':
+        values, units = polychart(var, coords, path, files)
+        type = 'Averaged over a Polygon'
+    elif seriestype == 'shapefile':
+        values, units = polychart(var, coords, path, files)
+        type = 'Average for ' + data['region']
+
+    values.sort(key=lambda tup: tup[0])
+    resp = {'values': values, 'units': units, 'variable': var, 'type': type}
+
+    # if model == 'gldas':
+    #     resp['multiline'], resp['boxplot'], resp['categories'] = makestatplots(values, data['time'])
+
+    return resp
+
+
+def pointchart(var, coords, path, files):
     """
     Description: generates a timeseries for a given point and given variable defined by the user.
     Arguments: A dictionary object from the AJAX-ed JSON object that contains coordinates and the variable name.
@@ -19,53 +71,38 @@ def pointchart(data):
     Dependencies: netcdf4, numpy, datetime, os, calendar, app_configuration (options)
     Last Updated: Oct 11 2018
     """
-    # input parameters
-    var = str(data['variable'])
-    coords = data['coords']
-
-    # environment settings
-    configs = app_configuration()
-    path = configs['threddsdatadir']
-    path = os.path.join(path, configs['timestamp'], 'processed')
-
     # return items
-    data['values'] = []
+    values = []
 
-    # list the netcdfs to be processed
-    allfiles = os.listdir(path)
-    files = [nc for nc in allfiles if nc.endswith('.nc')]
-    files.sort()
-
-    # get a list of the latitudes and longitudes and the units
-    dataset = netCDF4.Dataset(os.path.join(path, str(files[0])), 'r')
-    nc_lons = dataset['lon'][:]
-    nc_lats = dataset['lat'][:]
-    data['units'] = dataset[var].__dict__['units']
+    # get a list of the lat/lon and units using a reference file
+    nc_obj = netCDF4.Dataset(os.path.join(path, files[0]), 'r')
+    nc_lons = nc_obj['lon'][:]
+    nc_lats = nc_obj['lat'][:]
+    units = nc_obj[var].__dict__['units']
     # get the index number of the lat/lon for the point
-    adj_lon_ind = (numpy.abs(nc_lons - coords[0])).argmin()
-    adj_lat_ind = (numpy.abs(nc_lats - coords[1])).argmin()
-    dataset.close()
+    lon_indx = (numpy.abs(nc_lons - coords[0])).argmin()
+    lat_indx = (numpy.abs(nc_lats - coords[1])).argmin()
+    nc_obj.close()
 
     # extract values at each timestep
-    i = 1
     for nc in files:
         # get the time value for each file
-        dataset = netCDF4.Dataset(os.path.join(path, nc), 'r')
-        t_value = dataset['time'].__dict__['begin_date']
-        t_value = datetime.datetime.strptime(t_value, "%Y%m%d%H")
-        t_delta = 6 * i
-        i += 1
-        t_step = t_value + datetime.timedelta(hours=t_delta)
-        t_step = calendar.timegm(t_step.utctimetuple()) * 1000
+        nc_obj = netCDF4.Dataset(path + '/' + nc, 'r')
+        t_val = nc_obj['time'].__dict__['begin_date']
+        try:
+            t_val = datetime.datetime.strptime(t_val, "%Y%m%d")
+        except ValueError:
+            t_val = datetime.datetime.strptime(t_val, "%Y%m%d%H")
+        time = calendar.timegm(t_val.utctimetuple()) * 1000
         # slice the array at the area you want
-        val = float(dataset[var][0, adj_lat_ind, adj_lon_ind].data)
-        data['values'].append((t_step, val))
-        dataset.close()
+        val = float(nc_obj[var][0, lat_indx, lon_indx].data)
+        values.append((time, val))
+        nc_obj.close()
 
-    return data
+    return values, units
 
 
-def polychart(data):
+def polychart(var, coords, path, files):
     """
     Description: generates a timeseries for a given point and given variable defined by the user.
     Arguments: A dictionary object from the AJAX-ed JSON object that contains coordinates and the variable name.
@@ -73,58 +110,43 @@ def polychart(data):
     Dependencies: netcdf4, numpy, datetime, os, calendar, app_configuration (options)
     Last Updated: May 14 2019
     """
-    # input parameters
-    var = str(data['variable'])
-    coords = data['coords'][0]  # 5x2 array 1 row/[lat,lon]/corner (1st repeated), clockwise from bottom-left
-
-    # environment settings
-    configs = app_configuration()
-    path = configs['threddsdatadir']
-    path = os.path.join(path, configs['timestamp'], 'processed')
-
     # return items
-    data['values'] = []
-
-    # list the netcdfs to be processed
-    allfiles = os.listdir(path)
-    files = [nc for nc in allfiles if nc.endswith('.nc')]
-    files.sort()
+    values = []
 
     # get a list of the latitudes and longitudes and the units
-    dataset = netCDF4.Dataset(os.path.join(path, str(files[0])), 'r')
-    nc_lons = dataset['lon'][:]
-    nc_lats = dataset['lat'][:]
-    data['units'] = dataset[var].__dict__['units']
+    nc_obj = netCDF4.Dataset(os.path.join(path, str(files[0])), 'r')
+    nc_lons = nc_obj['lon'][:]
+    nc_lats = nc_obj['lat'][:]
+    units = nc_obj[var].__dict__['units']
     # get a bounding box of the rectangle in terms of the index number of their lat/lons
-    minlon = (numpy.abs(nc_lons - coords[1][0])).argmin()
-    maxlon = (numpy.abs(nc_lons - coords[3][0])).argmin()
-    maxlat = (numpy.abs(nc_lats - coords[1][1])).argmin()
-    minlat = (numpy.abs(nc_lats - coords[3][1])).argmin()
-    dataset.close()
+    minlon = (numpy.abs(nc_lons - coords[0][1][0])).argmin()
+    maxlon = (numpy.abs(nc_lons - coords[0][3][0])).argmin()
+    maxlat = (numpy.abs(nc_lats - coords[0][1][1])).argmin()
+    minlat = (numpy.abs(nc_lats - coords[0][3][1])).argmin()
+    nc_obj.close()
 
     # extract values at each timestep
-    i = 1
     for nc in files:
-        # get the time value for each file
-        dataset = netCDF4.Dataset(os.path.join(path, nc), 'r')
-        t_value = dataset['time'].__dict__['begin_date']
-        t_value = datetime.datetime.strptime(t_value, "%Y%m%d%H")
-        t_delta = 6 * i
-        i += 1
-        t_step = t_value + datetime.timedelta(hours=t_delta)
-        t_step = calendar.timegm(t_step.utctimetuple()) * 1000
-        # slice the array at the area you want
-        array = dataset[var][0, minlat:maxlat, minlon:maxlon].data
-        array[array < -9000] = numpy.nan  # If you have fill values, change the comparator to git rid of it
+        # set the time value for each file
+        nc_obj = netCDF4.Dataset(path + '/' + nc, 'r')
+        t_val = nc_obj['time'].__dict__['begin_date']
+        try:
+            t_val = datetime.datetime.strptime(t_val, "%Y%m%d")
+        except ValueError:
+            t_val = datetime.datetime.strptime(t_val, "%Y%m%d%H")
+        time = calendar.timegm(t_val.utctimetuple()) * 1000
+        # slice the array, drop nan values, get the mean, append to list of values
+        array = nc_obj[var][0, minlat:maxlat, minlon:maxlon].data
+        array[array < -5000] = numpy.nan  # If you have fill values, change the comparator to git rid of it
         array = array.flatten()
         array = array[~numpy.isnan(array)]
-        data['values'].append((t_step, float(array.mean())))
-        dataset.close()
+        values.append((time, float(array.mean())))
+        nc_obj.close()
 
-    return data
+    return values, units
 
 
-def shpchart(data):
+def shpchart(var, path, files, region):
     """
     Description: This script accepts a netcdf file in a geographic coordinate system, specifically the NASA GLDAS
         netcdfs, and extracts the data from one variable and the lat/lon steps to create a geotiff of that information.
@@ -133,51 +155,37 @@ def shpchart(data):
     Returns: Creates a geotiff named 'geotiff.tif' in the directory specified
     Author: Riley Hales, RCH Engineering, March 2019
     """
-    # input parameters
-    var = str(data['variable'])
-    region = data['region']
-
-    # environment settings
-    configs = app_configuration()
-    path = configs['threddsdatadir']
-    path = os.path.join(path, configs['timestamp'], 'processed')
-    wrkpath = configs['app_wksp_path']
-
     # return items
-    data['values'] = []
-
-    # list the netcdfs to be processed
-    allfiles = os.listdir(path)
-    files = [nc for nc in allfiles if nc.endswith('.nc')]
-    files.sort()
+    values = []
 
     # Remove old geotiffs before filling it
+    wrkpath = App.get_app_workspace().path
     geotiffdir = os.path.join(wrkpath, 'geotiffs')
     if os.path.isdir(geotiffdir):
         shutil.rmtree(geotiffdir)
     os.mkdir(geotiffdir)
 
     # read netcdf, create geotiff, zonal statistics, format outputs for highcharts plotting
-    for i in range(len(files)):
+    for file in files:
         # open the netcdf and get metadata
-        nc_obj = netCDF4.Dataset(os.path.join(path, str(files[i])), 'r')
+        nc_obj = netCDF4.Dataset(os.path.join(path, file), 'r')
         lat = nc_obj.variables['lat'][:]
         lon = nc_obj.variables['lon'][:]
-        data['units'] = nc_obj[var].__dict__['units']
+        units = nc_obj[var].__dict__['units']
 
         # get the variable's data array
-        var_data = nc_obj.variables[var][:]  # this is the array of values for the dataset
+        var_data = nc_obj.variables[var][:]  # this is the array of values for the nc_obj
         array = numpy.asarray(var_data)[0, :, :]  # converting the data type
         array[array < -9000] = numpy.nan  # use the comparator to drop nodata fills
         array = array[::-1]  # vertically flip array so tiff orientation is right (you just have to, try it)
 
         # create the timesteps for the highcharts plot
-        t_value = (nc_obj['time'].__dict__['begin_date'])
-        t_step = datetime.datetime.strptime(t_value, "%Y%m%d%H")
-        t_delta = 6 * i
-        i += 1
-        t_step = t_step + datetime.timedelta(hours=t_delta)
-        time = calendar.timegm(t_step.utctimetuple()) * 1000
+        t_val = nc_obj['time'].__dict__['begin_date']
+        try:
+            t_val = datetime.datetime.strptime(t_val, "%Y%m%d")
+        except ValueError:
+            t_val = datetime.datetime.strptime(t_val, "%Y%m%d%H")
+        time = calendar.timegm(t_val.utctimetuple()) * 1000
 
         # file paths and settings
         shppath = os.path.join(wrkpath, 'shapefiles', region, region.replace(' ', '') + '.shp')
@@ -186,12 +194,51 @@ def shpchart(data):
 
         with rasterio.open(gtiffpath, 'w', driver='GTiff', height=len(lat), width=len(lon), count=1, dtype='float32',
                            nodata=numpy.nan, crs='+proj=latlong', transform=geotransform) as newtiff:
-            newtiff.write(array, 1)
+            newtiff.write(array, 1)  # data, band number
 
         stats = rasterstats.zonal_stats(shppath, gtiffpath, stats="mean")
-        data['values'].append((time, stats[0]['mean']))
+        values.append((time, stats[0]['mean']))
 
     if os.path.isdir(geotiffdir):
         shutil.rmtree(geotiffdir)
 
-    return data
+    return values, units
+
+
+def makestatplots(values, time):
+    """
+    Calculates statistics for the array of timeseries values and returns arrays for a highcharts boxplot
+    Dependencies: statistics, pandas, datetime, calendar
+    """
+    df = pandas.DataFrame(values, columns=['dates', 'values'])
+    multiline = {'yearmulti': {'min': [], 'max': [], 'mean': []},
+                 'monthmulti': {'min': [], 'max': [], 'mean': []}}
+    boxplot = {'yearbox': [], 'monthbox': []}
+
+    months = dict((n, m) for n, m in enumerate(calendar.month_name))
+    numyears = int(datetime.datetime.now().strftime("%Y")) - 1999  # not 2000 because we include that year
+    categories = {'month': [months[i + 1] for i in range(12)], 'year': [i + 2000 for i in range(numyears)]}
+
+    if time == 'alltimes':
+        for i in range(1, 13):  # static 13 to go to years
+            tmp = df[int(df['dates'][-2]) == i]['values']
+            std = statistics.stdev(tmp)
+            ymin = min(tmp)
+            ymax = max(tmp)
+            mean = sum(tmp) / len(tmp)
+            boxplot['monthbox'].append([months[i], ymin, mean - std, mean, mean + std, ymax])
+            multiline['monthmulti']['min'].append((months[i], ymin))
+            multiline['monthmulti']['mean'].append((months[i], mean))
+            multiline['monthmulti']['max'].append((months[i], ymax))
+        for i in range(numyears):
+            tmp = df[int(df['dates'][0:3]) == i + 2000]['values']
+            std = statistics.stdev(tmp)
+            ymin = min(tmp)
+            ymax = max(tmp)
+            mean = sum(tmp) / len(tmp)
+            boxplot['yearbox'].append([i, ymin, mean - std, mean, mean + std, ymax])
+            multiline['yearmulti']['min'].append((i + 2000, ymin))
+            multiline['yearmulti']['mean'].append((i + 2000, mean))
+            multiline['yearmulti']['max'].append((i + 2000, ymax))
+
+    return multiline, boxplot, categories

@@ -46,6 +46,11 @@ class Earthobserver(TethysAppBase):
                 controller='earthobserver.controllers.map'
             ),
             urlmap(
+                name='apihelp',
+                url='earthobserver/apihelp',
+                controller='earthobserver.controllers.apihelp'
+            ),
+            urlmap(
                 name='manage',
                 url='earthobserver/manage',
                 controller='earthobserver.controllers.manage'
@@ -53,19 +58,9 @@ class Earthobserver(TethysAppBase):
 
             # url maps for ajax calls
             urlmap(
-                name='getPointSeries',
-                url='earthobserver/ajax/getPointSeries',
-                controller='earthobserver.ajax.get_pointseries',
-            ),
-            urlmap(
-                name='getPolygonAverage',
-                url='earthobserver/ajax/getPolygonAverage',
-                controller='earthobserver.ajax.get_polygonaverage',
-            ),
-            urlmap(
-                name='getShapeAverage',
-                url='earthobserver/ajax/getShapeAverage',
-                controller='earthobserver.ajax.get_shapeaverage',
+                name='getChart',
+                url='earthobserver/ajax/getChart',
+                controller='earthobserver.ajax.getChart',
             ),
 
             # url maps for api calls

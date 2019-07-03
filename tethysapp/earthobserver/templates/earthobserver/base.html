@@ -41,12 +41,12 @@
 
 {% block app_navigation_items %}
   {% url "earthobserver:home" as home %}
-  {% url "earthobserver:map" as map %}
+  {% url "earthobserver:apihelp" as apihelp %}
   {% url "earthobserver:manage" as manage %}
 
   <li class="title">App Navigation</li>
   <li class="{% if request.path == home %}active{% endif %}"><a href="{{ home }}">Home</a></li>
-  <li class="{% if request.path == map %}active{% endif %}"><a href="{{ map }}">Map Data Viewer</a></li>
+  <li class="{% if request.path == apihelp %}active{% endif %}"><a href="{{ apihelp }}">How To Use The API</a></li>
   <li><a target="_blank" href="https://github.com/rileyhales/earthobserver">View the Source Code</a></li>
   <li><a target="_blank" href="https://youtube.com">Watch a Video Tutorial</a></li>
   {% if user.is_superuser %}

@@ -34,7 +34,7 @@ def currentgfs():
     # if there is actually data in the app, then read the file with the timestamp on it
     path = App.get_custom_setting("Local Thredds Folder Path")
     timestamp = get_gfsdate()
-    path = os.path.join(path, timestamp)
+    path = os.path.join(path, 'gfs', timestamp)
     if os.path.exists(path):
         timestamp = datetime.datetime.strptime(timestamp, "%Y%m%d%H")
         return "This GFS data from " + datetime.datetime.strftime(timestamp, "%b %d, %I%p UTC")

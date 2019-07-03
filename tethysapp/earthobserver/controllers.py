@@ -32,57 +32,64 @@ def map(request):
     """
     Controller for the map page.
     """
-    gldas_options = []
-    variables = gldas_variables()
-    for key in sorted(variables.keys()):
-        tuple1 = (key, variables[key])
-        gldas_options.append(tuple1)
+    # get/check information from AJAX request
+    post_info = request.GET
+    model = post_info.getlist('model')[0]
 
-    model = SelectInput(
-        display_text='Choose Earth Observation Data',
-        name='model',
-        multiple=False,
-        original=True,
-        options=get_eodatamodels(),
-    )
+    if model == 'gldas':
+        modelname = 'NASA GLDAS Data'
 
-    gldas_vars = SelectInput(
-        display_text='Select GLDAS Variable',
-        name='gldas_vars',
-        multiple=False,
-        original=True,
-        options=gldas_options,
-    )
+        gldas_options = []
+        variables = gldas_variables()
+        for key in sorted(variables.keys()):
+            tuple1 = (key, variables[key])
+            gldas_options.append(tuple1)
 
-    dates = SelectInput(
-        display_text='Time Interval',
-        name='dates',
-        multiple=False,
-        original=True,
-        options=timecoverage(),
-        initial='alltimes'
-    )
+        variables = SelectInput(
+            display_text='Select GLDAS Variable',
+            name='variables',
+            multiple=False,
+            original=True,
+            options=gldas_options,
+        )
 
-    gfs_vars = SelectInput(
-        display_text='Select GFS Variable',
-        name='gfs_vars',
-        multiple=False,
-        original=True,
-        options=gfs_variables(),
-    )
+        dates = SelectInput(
+            display_text='Time Interval',
+            name='dates',
+            multiple=False,
+            original=True,
+            options=timecoverage(),
+            initial='alltimes'
+        )
+        charttype = SelectInput(
+            display_text='Choose a Plot Type',
+            name='charttype',
+            multiple=False,
+            original=True,
+            options=get_charttypes(),
+        )
 
-    levels = SelectInput(
-        display_text='Available Forecast Levels',
-        name='levels',
-        multiple=False,
-        original=True,
-        options=structure_byvars()['al'],
-    )
+    elif model == 'gfs':
+        modelname = 'NOAA GFS Data'
 
-    gfsdate = currentgfs()
+        variables = SelectInput(
+            display_text='Select GFS Variable',
+            name='variables',
+            multiple=False,
+            original=True,
+            options=gfs_variables(),
+        )
+        levels = SelectInput(
+            display_text='Available Forecast Levels',
+            name='levels',
+            multiple=False,
+            original=True,
+            options=structure_byvars()['al'],
+        )
+        gfsdate = currentgfs()
 
     colorscheme = SelectInput(
-        display_text='Raster Color Scheme',
+        display_text='EO Data Color Scheme',
         name='colorscheme',
         multiple=False,
         original=True,
@@ -91,7 +98,7 @@ def map(request):
     )
 
     opacity = RangeSlider(
-        display_text='Raster Opacity',
+        display_text='EO Data Layer Opacity',
         name='opacity',
         min=.5,
         max=1,
@@ -100,8 +107,8 @@ def map(request):
     )
 
     gj_color = SelectInput(
-        display_text='Boundary - Border Colors',
-        name='gjColor',
+        display_text='Boundary Border Colors',
+        name='gjClr',
         multiple=False,
         original=True,
         options=geojson_colors(),
@@ -109,8 +116,8 @@ def map(request):
     )
 
     gj_opacity = RangeSlider(
-        display_text='Boundary - Border Opacity',
-        name='gjOpacity',
+        display_text='Boundary Border Opacity',
+        name='gjOp',
         min=0,
         max=1,
         step=.1,
@@ -118,8 +125,8 @@ def map(request):
     )
 
     gj_weight = RangeSlider(
-        display_text='Boundary - Border Thickness',
-        name='gjWeight',
+        display_text='Boundary Border Thickness',
+        name='gjWt',
         min=1,
         max=5,
         step=1,
@@ -127,8 +134,8 @@ def map(request):
     )
 
     gj_fillcolor = SelectInput(
-        display_text='Boundary - Fill Colors',
-        name='gjFillColor',
+        display_text='Boundary Fill Color',
+        name='gjFlClr',
         multiple=False,
         original=True,
         options=geojson_colors(),
@@ -136,47 +143,51 @@ def map(request):
     )
 
     gj_fillopacity = RangeSlider(
-        display_text='Boundary - Fill Opacity',
-        name='gjFillOpacity',
+        display_text='Boundary Fill Opacity',
+        name='gjFlOp',
         min=0,
         max=1,
         step=.1,
         initial=.5,
     )
 
-    charttype = SelectInput(
-        display_text='Choose a Plot Type',
-        name='charttype',
-        multiple=False,
-        original=True,
-        options=get_charttypes(),
-    )
-
     context = {
         # data options
         'model': model,
-        'gldas_vars': gldas_vars,
-        'dates': dates,
-        'gfs_vars': gfs_vars,
-        'levels': levels,
-        'gfsdate': gfsdate,
+        'modelname': modelname,
+        'variables': variables,
+        # also model specific options
 
         # display options
         'colorscheme': colorscheme,
         'opacity': opacity,
-        'gjColor': gj_color,
-        'gjOpacity': gj_opacity,
-        'gjWeight': gj_weight,
-        'gjFillColor': gj_fillcolor,
-        'gjFillOpacity': gj_fillopacity,
-        'charttype': charttype,
+        'gjClr': gj_color,
+        'gjOp': gj_opacity,
+        'gjWt': gj_weight,
+        'gjFlClr': gj_fillcolor,
+        'gjFlOp': gj_fillopacity,
 
         # metadata
         'customsettings': app_configuration(),
         'version': App.version,
     }
 
+    if model == 'gldas':
+        context['dates'] = dates
+        context['charttype'] = charttype
+    elif model =='gfs':
+        context['levels'] = levels
+        context['gfsdate'] = gfsdate
+
     return render(request, 'earthobserver/map.html', context)
+
+
+@login_required()
+def apihelp(request):
+    context = {
+        'version': App.version,
+    }
+    return render(request, 'earthobserver/apihelp.html', context)
 
 
 @login_required()

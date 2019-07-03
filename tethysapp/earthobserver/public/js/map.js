@@ -15,7 +15,7 @@ $.ajaxSetup({
 });
 
 ////////////////////////////////////////////////////////////////////////  LOAD THE MAP
-// threddsbase and geoserverbase are defined in the base.html scripts sections
+// threddsbase and geoserverbase and model are defined in the base.html scripts sections
 const mapObj = map();                   // used by legend and draw controls
 const basemapObj = basemaps();          // used in the make controls function
 
@@ -48,6 +48,15 @@ mapObj.on("mousemove", function (event) {
     $("#mouse-position").html('Lat: ' + event.latlng.lat.toFixed(5) + ', Lon: ' + event.latlng.lng.toFixed(5));
 });
 
+let wmsurl;
+if (model === 'gldas') {
+    wmsurl = threddsbase + 'gldas/' + $("#dates").val() + '.ncml';
+} else if (model === 'gfs') {
+    wmsurl = threddsbase + 'gfs/' + $("#levels").val() + '_wms.ncml';
+} else {
+    alert('Unable to detect an EO data model. Go back to the previous page and try again')
+    // todo redirect the user to the home page
+}
 let layerObj = newLayer();              // adds the wms raster layer
 let controlsObj = makeControls();       // the layer toggle controls top-right corner
 legend.addTo(mapObj);                   // add the legend graphic to the map
@@ -61,74 +70,40 @@ function update() {
     }
     layerObj = newLayer();
     controlsObj = makeControls();
-    getDrawnChart(drawnItems);
     legend.addTo(mapObj);
 }
 
-$("#model").change(function () {
-    let model = $(this).val();
-    if (model === 'gldas') {
-        $("#gldascontrols").css({'display':'initial'});
-        $("#gfscontrols").css({'display':'none'});
-    } else if (model === 'gfs') {
-        $("#gldascontrols").css({'display':'none'});
-        $("#gfscontrols").css({'display':'initial'});
-    }
+$("#variables").change(function () {
     clearMap();
     update();
-});
-
-$("#gldas_vars").change(function () {
-    clearMap();
-    update();
+    getDrawnChart(drawnItems);
 });
 
 $("#dates").change(function () {
     clearMap();
     update();
+    getDrawnChart(drawnItems);
 });
-
-$("#gfs_vars").change(function () {
-    clearMap();
-    update();
-});
-
-
-$('#colorscheme').change(function () {
-    clearMap();
-    for (let i = 0; i < geojsons.length; i++) {
-        geojsons[i][0].addTo(mapObj)
-    }
-    layerObj = newLayer();
-    controlsObj = makeControls();
-    legend.addTo(mapObj);
-});
-
-$("#opacity").change(function () {
-    layerObj.setOpacity($(this).val());
-});
-
-
-$('#gjColor').change(function () {
-    styleGeoJSON();
-});
-$("#gjOpacity").change(function () {
-    styleGeoJSON();
-});
-$("#gjWeight").change(function () {
-    styleGeoJSON();
-});
-$('#gjFillColor').change(function () {
-    styleGeoJSON();
-});
-$("#gjFillOpacity").change(function () {
-    styleGeoJSON();
-});
-
 
 $('#charttype').change(function () {
     makechart();
 });
+
+// todo change this
+// $("#levels").change(function () {
+//     clearMap();
+//     update();
+// });
+
+
+$('#colorscheme').change(function () {clearMap();update();});
+$("#opacity").change(function () {layerObj.setOpacity($(this).val())});
+$('#gjClr').change(function () {styleGeoJSON();});
+$("#gjOp").change(function () {styleGeoJSON();});
+$("#gjWt").change(function () {styleGeoJSON();});
+$('#gjFlClr').change(function () {styleGeoJSON();});
+$("#gjFlOp").change(function () {styleGeoJSON();});
+
 $("#display").click(function() {
     $("#displayopts").toggle();
 });
