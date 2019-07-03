@@ -4,32 +4,52 @@ from tethys_sdk.gizmos import SelectInput, RangeSlider
 
 from .app import Earthobserver as App
 from .options import gldas_variables, timecoverage, get_charttypes, gfs_variables, wms_colors, geojson_colors,\
-    currentgfs
+    currentgfs, app_configuration, structure_byvars
 
 
 @login_required()
 def home(request):
     """
-    Controller for the app home page.
+    Controller for the home page.
+    """
+    model = SelectInput(
+        display_text='Choose Earth Observation Data',
+        name='model',
+        multiple=False,
+        options=[
+            ('(Historical) NASA GLDAS (Global Land Data Assimilation System)', 'gldas'),
+            ('(Forecasted) NOAA GFS (Global Forecast System)', 'gfs')
+        ],
+        initial=False
+    )
+    context = {
+        'model': model,
+        # metadata
+        'version': App.version,
+    }
+    return render(request, 'earthobserver/home.html', context)
+
+
+@login_required()
+def map(request):
+    """
+    Controller for the map page.
     """
     gldas_options = []
-    gfs_options = []
     variables = gldas_variables()
     for key in sorted(variables.keys()):
         tuple1 = (key, variables[key])
         gldas_options.append(tuple1)
-    variables = gfs_variables()
-    for key in sorted(variables.keys()):
-        tuple1 = (key, variables[key])
-        gfs_options.append(tuple1)
-    del tuple1, key, variables
 
     model = SelectInput(
-        display_text='Choose EO System/Model',
+        display_text='Choose Earth Observation Data',
         name='model',
         multiple=False,
         original=True,
-        options=[('GLDAS - Global Land Data Assimilation System', 'gldas'), ('GFS - Global Forecast System', 'gfs')],
+        options=[
+            ('GLDAS - Global Land Data Assimilation System', 'gldas'),
+            ('GFS - Global Forecast System', 'gfs')
+        ],
     )
 
     gldas_vars = SelectInput(
@@ -54,7 +74,15 @@ def home(request):
         name='gfs_vars',
         multiple=False,
         original=True,
-        options=gfs_options,
+        options=gfs_variables(),
+    )
+
+    levels = SelectInput(
+        display_text='Available Forecast Levels',
+        name='levels',
+        multiple=False,
+        original=True,
+        options=structure_byvars()['al'],
     )
 
     gfsdate = currentgfs()
@@ -136,7 +164,9 @@ def home(request):
         'gldas_vars': gldas_vars,
         'dates': dates,
         'gfs_vars': gfs_vars,
+        'levels': levels,
         'gfsdate': gfsdate,
+
         # display options
         'colorscheme': colorscheme,
         'opacity': opacity,
@@ -146,14 +176,18 @@ def home(request):
         'gjFillColor': gj_fillcolor,
         'gjFillOpacity': gj_fillopacity,
         'charttype': charttype,
+
         # metadata
+        'customsettings': app_configuration(),
         'version': App.version,
     }
 
-    return render(request, 'earthobserver/home.html', context)
+    return render(request, 'earthobserver/map.html', context)
 
 
 @login_required()
-def update_gfs():
-
-    return
+def manage(request):
+    context = {
+        'version': App.version,
+    }
+    return render(request, 'earthobserver/manage.html', context)

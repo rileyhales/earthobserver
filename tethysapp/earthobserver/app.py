@@ -1,7 +1,9 @@
 from tethys_sdk.base import TethysAppBase, url_map_maker
 from tethys_sdk.app_settings import CustomSetting
 
-# todo update the gfs download script with the latest ffgs tool workflow
+# todo verify that the gldas shell works without credentials
+# todo add controls/page for running the data updating scripts
+# todo write about the different EO models
 
 
 class Earthobserver(TethysAppBase):
@@ -15,14 +17,12 @@ class Earthobserver(TethysAppBase):
     root_url = 'earthobserver'
     color = '#002366'
     description = 'A tethys app for visualizing Earth Observation (EO) products including GLDAS and GFS.\n' \
-                  'View time-animated maps\n' \
-                  'Extract and download time series data at a point, polygon, or region level\n'
+                  'View time-animated maps, generate charts of data, extract and download time series data ' \
+                  'at a point, in a bounding box, or in a shapefile\n'
     tags = 'Earth Observations, Time Series, Maps, Charts, Downloads'
     enable_feedback = False
     feedback_emails = []
-    github = 'https://github.com/rileyhales/earthobserver'
-    youtube = 'https://youtube.com'
-    version = 'Development - 18 June 2019'
+    version = 'Development - 3 July 2019'
 
     def url_maps(self):
         """
@@ -37,20 +37,18 @@ class Earthobserver(TethysAppBase):
                 url='earthobserver',
                 controller='earthobserver.controllers.home'
             ),
-
-            # url map for calling the gfs downloading workflow
             urlmap(
-                name='updateGFS',
-                url='earthobserver/updateGFS',
-                controller='earthobserver.controllers.update_gfs'
+                name='map',
+                url='earthobserver/map',
+                controller='earthobserver.controllers.map'
+            ),
+            urlmap(
+                name='manage',
+                url='earthobserver/manage',
+                controller='earthobserver.controllers.manage'
             ),
 
             # url maps for ajax calls
-            urlmap(
-                name='getCustomSettings',
-                url='earthobserver/ajax/getCustomSettings',
-                controller='earthobserver.ajax.get_customsettings'
-            ),
             urlmap(
                 name='getPointSeries',
                 url='earthobserver/ajax/getPointSeries',

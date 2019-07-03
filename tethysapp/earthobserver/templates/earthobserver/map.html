@@ -1,0 +1,104 @@
+{% extends "earthobserver/base.html" %}
+{% load tethys_gizmos staticfiles %}
+{% load tethys_gizmos %}
+{% load staticfiles %}
+
+{% block app_navigation_items %}
+  <li class="title">Data Controls</li>
+  {% gizmo select_input model %}
+  <hr>
+
+  <div id="gldascontrols">
+    {% gizmo select_input gldas_vars %}
+    {% gizmo select_input dates %}
+    {% gizmo select_input charttype %}
+  </div>
+  <div id="gfscontrols" style="display: none;">
+    {% gizmo select_input gfs_vars %}
+    {% gizmo select_input levels %}
+    {#    {% gizmo select_input heights %}#}
+    <div style="text-align: center; padding: 4px;"><strong>{{ gfsdate }}</strong></div>
+  </div>
+  <hr>
+
+  <li class="title" id="display" role="button">Map Styling Controls</li>
+  <div id="displayopts">
+    {% gizmo select_input colorscheme %}
+    {% gizmo range_slider opacity %}
+    {% gizmo select_input gjColor %}
+    {% gizmo range_slider gjOpacity %}
+    {% gizmo range_slider gjWeight %}
+    {% gizmo select_input gjFillColor %}
+    {% gizmo range_slider gjFillOpacity %}
+  </div>
+  <hr>
+
+  <li class="title">Custom Region Shapefile</li>
+  <p>This is where the user will upload a shapefile with commands to view it on the map and get their own timeseries out</p>
+{% endblock %}
+
+{% block app_actions %}
+{% endblock %}
+
+{% block app_content %}
+  <div id="outer-container" style="overflow-y: auto">
+    <div id="map"></div>
+    <div id="highchart"></div>
+  </div>
+{% endblock %}
+
+{% block content_dependent_styles %}
+  {{ block.super }}
+  <!-- styling for leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css"/>
+  <!-- styling for timeseries controls -->
+  <link rel="stylesheet"
+        href="https://cdn.rawgit.com/socib/Leaflet.TimeDimension/master/dist/leaflet.timedimension.control.min.css"/>
+  <!-- styling for the leaflet draw plugin -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.2/leaflet.draw-src.css"/>
+
+  <!-- styling generated for the app -->
+  <link href="{% static 'earthobserver/css/map.css' %}" rel="stylesheet"/>
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script>
+    let threddsbase = "{{ customsettings.threddsurl }}";
+    let geoserverbase = "{{ customsettings.geoserverurl }}";
+  </script>
+
+  <!-- Allows csrf verification with AJAX -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+
+  <!-- script for leaflet -->
+  <script type="text/javascript" src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"></script>
+  <!-- Leadlet with Esri -->
+  <script src="https://unpkg.com/esri-leaflet@2.2.3/dist/esri-leaflet.js"
+          integrity="sha512-YZ6b5bXRVwipfqul5krehD9qlbJzc6KOGXYsDjU9HHXW2gK57xmWl2gU6nAegiErAqFXhygKIsWPKbjLPXVb2g=="
+          crossorigin=""></script>
+  <!-- script for timeseries controls in leaflet -->
+  <script type="text/javascript"
+          src="https://cdn.rawgit.com/socib/Leaflet.TimeDimension/master/dist/leaflet.timedimension.min.js"></script>
+  <script type="text/javascript" src="https://cdn.rawgit.com/nezasa/iso8601-js-period/master/iso8601.min.js"></script>
+  <!-- allows you to use the leaflet draw plugin -->
+  <script type="text/javascript"
+          src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.2/leaflet.draw-src.js"></script>
+
+  <!-- script for using highcharts (display timeseries plot) -->
+  <script type="text/javascript" src="https://code.highcharts.com/highcharts.js"></script>
+  <script type="text/javascript" src="https://code.highcharts.com/highcharts-more.js"></script>
+  <script type="text/javascript" src="https://code.highcharts.com/modules/exporting.js"></script>
+  <script type="text/javascript" src="https://code.highcharts.com/modules/export-data.js"></script>
+  <script type="text/javascript" src="https://code.highcharts.com/modules/no-data-to-display.js"></script>
+
+  <!-- geojsons for the map -->
+  <script type="text/javascript" src="{% static 'earthobserver/js/geojsons1.js' %}"></script>
+  <script type="text/javascript" src="{% static 'earthobserver/js/geojsons2.js' %}"></script>
+  <script type="text/javascript" src="{% static 'earthobserver/js/geojsons3.js' %}"></script>
+
+  <!-- scripts I wrote for the app, main should go last -->
+  <script type="text/javascript" src="{% static 'earthobserver/js/highcharts.js' %}"></script>
+  <script type="text/javascript" src="{% static 'earthobserver/js/leaflet.js' %}"></script>
+  <script type="text/javascript" src="{% static 'earthobserver/js/map.js' %}"></script>
+{% endblock %}

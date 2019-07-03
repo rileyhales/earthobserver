@@ -8,112 +8,49 @@
 {% block app_icon %}<img src="{% static tethys_app.icon %}">{% endblock %}
 {% block app_title %}{{ tethys_app.name }}{% endblock %}
 
-<div class="header-button glyphicon-button" data-toggle="tooltip" data-placement="bottom" title="How To Use This Page">
-  <a data-toggle="modal" data-target="#help-modal"><span class="glyphicon glyphicon-question-sign"></span></a>
-</div>
-
-
 {% block header_buttons %}
   <div style="text-align: center; color: white; padding: 8px"><strong>{{ version }}</strong></div>
+  <div class="header-button glyphicon-button" data-toggle="tooltip" data-placement="bottom" title="How To Use The App">
+    <a data-toggle="modal" data-target="#howto-modal"><span class="glyphicon glyphicon-question-sign"></span></a>
+  </div>
+{% endblock %}
+
+
+{% block after_app_content %}
+  <div class="modal fade" id="howto-modal" tabindex="-1" role="dialog" aria-labelledby="help-modal-label">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                  aria-hidden="true">&times;</span></button>
+          <h5 class="modal-title" id="help-modal-label">How To Use The App</h5>
+        </div>
+
+        <div class="modal-body">
+          {# todo this is where the help modal needs to go #}
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-dismiss="modal">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
 {% endblock %}
 
 
 {% block app_navigation_items %}
-  <li class="title">Data Controls</li>
-  {% gizmo select_input model %}
-  <div id="mouse-position" class="well well-sm" style="text-align: center"></div>
+  {% url "earthobserver:home" as home %}
+  {% url "earthobserver:map" as map %}
+  {% url "earthobserver:manage" as manage %}
 
-  <div id="gldascontrols">
-    {% gizmo select_input gldas_vars %}
-    {% gizmo select_input dates %}
-    {% gizmo select_input charttype %}
-  </div>
-  <div id="gfscontrols" style="display: none;">
-    {% gizmo select_input gfs_vars %}
-    <div style="text-align: center; padding: 4px;"><strong>{{ gfsdate }}</strong></div>
-  </div>
-
-  <li class="title">Custom Region Shapefile</li>
-  <p>This is where the user will upload a shapefile with commands to view it on the map and get their own timeseries out</p>
-
-  <li class="title" id="display" role="button">Click for Map Styling Controls</li>
-{#  <a class="btn btn-primary btn-block" >Click to View Options</a>#}
-  <div id="displayopts" style="display: none; overflow-y: auto; border-style: solid; border-width: medium; border-spacing: 5px">
-    {% gizmo select_input colorscheme %}
-    {% gizmo range_slider opacity %}
-    {% gizmo select_input gjColor %}
-    {% gizmo range_slider gjOpacity %}
-    {% gizmo range_slider gjWeight %}
-    {% gizmo select_input gjFillColor %}
-    {% gizmo range_slider gjFillOpacity %}
-  </div>
-{% endblock %}
-
-
-{% block app_actions %}
-  <strong style="color: white; font-size: large">Help and Resources</strong>
-  <a class="btn btn-default" role="button" data-toggle="modal" data-target="#help-modal">How To Use This App</a>
-{% endblock %}
-
-{% block content_dependent_styles %}
-  {{ block.super }}
-  <!-- styling for leaflet -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css"/>
-  <!-- styling for timeseries controls -->
-  <link rel="stylesheet"
-        href="https://cdn.rawgit.com/socib/Leaflet.TimeDimension/master/dist/leaflet.timedimension.control.min.css"/>
-  <!-- styling for the leaflet draw plugin -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.2/leaflet.draw-src.css"/>
-
-  <!-- styling generated for the app -->
-  <link href="{% static 'earthobserver/css/main.css' %}" rel="stylesheet"/>
-{% endblock %}
-
-{% block scripts %}
-  {{ block.super }}
-  <!-- Allows csrf verification with AJAX -->
-  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
-
-  <!-- script for leaflet -->
-  <script type="text/javascript" src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"></script>
-  <!-- Leadlet with Esri -->
-  <script src="https://unpkg.com/esri-leaflet@2.2.3/dist/esri-leaflet.js"
-          integrity="sha512-YZ6b5bXRVwipfqul5krehD9qlbJzc6KOGXYsDjU9HHXW2gK57xmWl2gU6nAegiErAqFXhygKIsWPKbjLPXVb2g=="
-          crossorigin=""></script>
-  <!-- script for timeseries controls in leaflet -->
-  <script type="text/javascript"
-          src="https://cdn.rawgit.com/socib/Leaflet.TimeDimension/master/dist/leaflet.timedimension.min.js"></script>
-  <script type="text/javascript" src="https://cdn.rawgit.com/nezasa/iso8601-js-period/master/iso8601.min.js"></script>
-  <!-- allows you to use the leaflet draw plugin -->
-  <script type="text/javascript"
-          src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.2/leaflet.draw-src.js"></script>
-
-  <!-- script for using highcharts (display timeseries plot) -->
-  <script type="text/javascript" src="https://code.highcharts.com/highcharts.js"></script>
-  <script type="text/javascript" src="https://code.highcharts.com/highcharts-more.js"></script>
-  <script type="text/javascript" src="https://code.highcharts.com/modules/exporting.js"></script>
-  <script type="text/javascript" src="https://code.highcharts.com/modules/export-data.js"></script>
-  <script type="text/javascript" src="https://code.highcharts.com/modules/no-data-to-display.js"></script>
-
-  <!-- Global site tag (gtag.js) - Google Analytics -->
-  <!--  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-128273217-2"></script>-->
-  <!--  <script>-->
-  <!--      window.dataLayer = window.dataLayer || [];-->
-
-  <!--      function gtag() {-->
-  <!--          dataLayer.push(arguments);-->
-  <!--      }-->
-
-  <!--      gtag('js', new Date());-->
-  <!--      gtag('config', 'UA-128273217-2');-->
-  <!--  </script>-->
-
-  <!-- scripts I wrote for the app, main should go last -->
-  <script src="{% static 'earthobserver/js/geojsons1.js' %}" type="text/javascript"></script>
-  <script src="{% static 'earthobserver/js/geojsons2.js' %}" type="text/javascript"></script>
-  <script src="{% static 'earthobserver/js/geojsons3.js' %}" type="text/javascript"></script>
-
-  <script src="{% static 'earthobserver/js/highcharts.js' %}" type="text/javascript"></script>
-  <script src="{% static 'earthobserver/js/leaflet.js' %}" type="text/javascript"></script>
-  <script src="{% static 'earthobserver/js/main.js' %}" type="text/javascript"></script>
+  <li class="title">App Navigation</li>
+  <li class="{% if request.path == home %}active{% endif %}"><a href="{{ home }}">Home</a></li>
+  <li class="{% if request.path == map %}active{% endif %}"><a href="{{ map }}">Map Data Viewer</a></li>
+  <li><a target="_blank" href="https://github.com/rileyhales/earthobserver">View the Source Code</a></li>
+  <li><a target="_blank" href="https://youtube.com">Watch a Video Tutorial</a></li>
+  {% if user.is_superuser %}
+    <li class="title">For Super Users</li>
+    <li class="{% if request.path == manage %}active{% endif %}"><a href="{{ manage }}">Manage Data Workflows</a></li>
+  {% endif %}
 {% endblock %}

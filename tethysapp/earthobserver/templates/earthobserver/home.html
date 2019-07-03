@@ -4,12 +4,29 @@
 {% load staticfiles %}
 
 {% block app_content %}
-  <div id="outer-container" style="overflow-y: auto">
-    <div id="map"></div>
-    <div id="highchart"></div>
+  <h1>Earth Observer Tool</h1>
+  {% gizmo select_input model %}
+  <button class="btn btn-success" role="button" id="submit">View Earth Observation Data</button>
+
+  <div class="modelinfo">
+    <div id="gldas">
+      <img src="{% static "earthobserver/images/nasalis.png" %}" height="20%vh">
+      This is where i'll put information about the GLDAS Data
+    </div>
+
+    <div id="gfs" style="display: none">
+      <img src="{% static "earthobserver/images/gfs.png" %}">
+      This is where i'll put information about the GFS Data
+    </div>
   </div>
 {% endblock %}
 
+{% block content_dependent_styles %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'earthobserver/css/main.css' %}"/>
+{% endblock %}
 
-{% block app_actions %}
+{% block scripts %}
+  {{ block.super }}
+  <script type="text/javascript" src="{% static 'earthobserver/js/main.js' %}"></script>
 {% endblock %}

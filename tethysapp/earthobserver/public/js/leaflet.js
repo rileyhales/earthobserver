@@ -25,8 +25,10 @@ function map() {
 
 function basemaps() {
     // create the basemap layers
-    let Esri_WorldImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}');
-    let Esri_WorldTerrain = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}', {maxZoom: 13});
+    // let Esri_WorldImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}');
+    // let Esri_WorldTerrain = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}', {maxZoom: 13});
+    let Esri_WorldImagery = L.esri.basemapLayer('Imagery');
+    let Esri_WorldTerrain = L.esri.basemapLayer('Terrain');
     let Esri_Imagery_Labels = L.esri.basemapLayer('ImageryLabels');
     return {
         "ESRI Imagery": L.layerGroup([Esri_WorldImagery, Esri_Imagery_Labels]).addTo(mapObj),
@@ -146,7 +148,7 @@ function newLayer() {
 
 ////////////////////////////////////////////////////////////////////////  LEGEND DEFINITIONS
 let legend = L.control({position: 'topright'});
-legend.onAdd = function (mapObj) {
+legend.onAdd = function () {
     let wmsurl, layer;
     let model = $("#model").val();
     if (model === 'gldas') {
@@ -162,6 +164,12 @@ legend.onAdd = function (mapObj) {
     return div
 };
 
+let latlon = L.control({position: 'bottomleft'});
+latlon.onAdd = function () {
+    let div = L.DomUtil.create('div', 'well well-sm');
+    div.innerHTML = '<div id="mouse-position" style="text-align: center"></div>';
+    return div;
+};
 ////////////////////////////////////////////////////////////////////////  GEOJSON LAYERS - GEOSERVER + WFS / GEOJSON
 let currentregion = '';              // tracks which region is on the chart for updates not caused by the user picking a new region
 function layerPopups(feature, layer) {
