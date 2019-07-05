@@ -8,7 +8,7 @@ class Earthobserver(TethysAppBase):
     """
     name = 'Earth Observer Tool'
     index = 'earthobserver:home'
-    icon = 'earthobserver/images/globe.png'
+    icon = 'earthobserver/images/observe.jpg'
     package = 'earthobserver'
     root_url = 'earthobserver'
     color = '#002366'
