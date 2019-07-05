@@ -1,13 +1,6 @@
 from tethys_sdk.base import TethysAppBase, url_map_maker
 from tethys_sdk.app_settings import CustomSetting
 
-# todo verify that the gldas shell works without credentials
-# todo add controls/page for running the data updating scripts
-# todo write about the different EO models
-# todo use hydroviewer hispaniola to learn how to accept shapefile upload and custom averaging
-# todo update controls for showing gfs data
-# todo separate the map controls for gldas and gfs (copy sfpt methods for request.post options)
-
 
 class Earthobserver(TethysAppBase):
     """
@@ -21,7 +14,7 @@ class Earthobserver(TethysAppBase):
     color = '#002366'
     description = 'A tethys app for visualizing Earth Observation (EO) products including GLDAS and GFS.\n' \
                   'View time-animated maps, generate charts of data, extract and download time series data ' \
-                  'at a point, in a bounding box, or in a shapefile\n'
+                  'at a point, in a bounding box, or in a shapefile'
     tags = 'Earth Observations, Time Series, Maps, Charts, Downloads'
     enable_feedback = False
     feedback_emails = []

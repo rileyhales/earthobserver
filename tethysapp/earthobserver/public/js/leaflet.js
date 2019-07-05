@@ -16,7 +16,7 @@ function map() {
             backwardButton: true,
             forwardButton: true,
             timeSliderDragUpdate: true,
-            minSpeed: 1,
+            minSpeed: 2,
             maxSpeed: 6,
             speedStep: 1,
         },
