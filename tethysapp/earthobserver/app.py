@@ -83,9 +83,14 @@ class Earthobserver(TethysAppBase):
                 controller='earthobserver.api.gldasdates',
             ),
             urlmap(
-                name='gfsdate',
-                url='earthobserver/api/gfsdate',
-                controller='earthobserver.api.gfsdate',
+                name='gfslevels',
+                url='earthobserver/api/gfslevels',
+                controller='earthobserver.api.gfslevels',
+            ),
+            urlmap(
+                name='gfsdates',
+                url='earthobserver/api/gfsdates',
+                controller='earthobserver.api.gfsdates',
             ),
         )
         return url_maps

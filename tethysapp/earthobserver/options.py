@@ -37,7 +37,7 @@ def currentgfs():
     path = os.path.join(path, 'gfs', timestamp)
     if os.path.exists(path):
         timestamp = datetime.datetime.strptime(timestamp, "%Y%m%d%H")
-        return "This GFS data from " + datetime.datetime.strftime(timestamp, "%b %d, %I%p UTC")
+        return "This GFS data from " + timestamp.strftime("%b %d, %I%p UTC")
     return "No GFS data detected"
 
 

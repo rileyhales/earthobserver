@@ -5,6 +5,60 @@
 
 {% block app_content %}
   <h1>How To Use The API</h1>
+  <li>All api calls are available at a url following the pattern:<br>
+    [tethys_portal_url]/apps/earthobserver/api/[method name]</li>
+  <li>Example parameters (as a python dictionary):<br>
+    <code>{'model': 'gfs', 'variable': 'al', 'coords': [-90, 45], 'loc_type': 'Point', 'time': 'alltimes', 'level': 'surface'}</code></li>
+  <li>Example API authorization token:<br><code>{'Authorization': 'Token 82ef74ef7a365350996268910315b29c8b1f2272'}</code></li>
+
+
+  <h3>getcapabilities</h3>
+  <li>Parameters: none</li>
+  <li>Returns: JSON response of the available api methods. Specifically,</li>
+  <code>
+    'api_calls': ['getcapabilities', 'eodatamodels', 'gldasvariables', 'gldasdates', 'gfsdates', 'gfslevels',
+    'timeseries']
+  </code>
+
+  <h3>eodatamodels</h3>
+  <li>Parameters: none</li>
+  <li>Returns: JSON response of a list of lists. Each list contains the full name and description of the EO data and the
+    short name which you use in api calls. For examples,</li>
+  <code>{"models": [["(Historical) NASA GLDAS (Global Land Data Assimilation System)", "gldas"], [etc...] ]</code>
+
+  <h3>gldasvariables</h3>
+  <li>Parameters: none</li>
+  <li>Returns: JSON response where the keys are the full name of the variable and the values are the shorted name of the variables you will use in api calls</li>
+  <code>{"Air Temperature": "Tair_f_inst", "Surface Albedo": "Albedo_inst", etc... }</code>
+
+  <h3>gldasdates</h3>
+  <li>Parameters: none</li>
+  <li>Returns: JSON response describing the earliest and latest dates of your downloaded gldas data as well as instructions for api_calls</li>
+  <code>{"start": "January 2000", "end": "March 2019", "api_calls": "Provide a string type 4 digit year or "alltimes""}</code>
+
+  <h3>gfsdates</h3>
+  <li>Parameters: none</li>
+  <li>Returns: JSON response describing the dates and files of available gfs data</li>
+  <code>{"gfs_time": "Jul 02, 12PM UTC", "gfs_files": 266, "gfs_start": "July 02 2019 at 18", "gfs_end": "July 06 2019 at 00"}</code>
+
+  <h3>gfslevels</h3>
+  <li>Parameters: none</li>
+  <li>Returns: JSON response describing all the gfs forecast levels</li>
+  <code>{"levels": ["atmosphere", "depthBelowLandLayer", "heightAboveGround", etc... ]}</code>
+
+  <h3>timeseries</h3>
+  <li>Parameters:<ul>
+    <li>model <b>(required)</b>: (string) the name of the EO data model you want a timeseries for using the shortened name you get from the eodatamodels api call. Examples: 'gldas'</li>
+    <li>variable <b>(required)</b>: (string) the name of the variable you want data for using the shortened name you get from the appropriate api call for your model type (eg gldasvariables if you chose the gldas model). Examples: 'Tair_f_inst'</li>
+    <li>loc_type <b>(required)</b>: (string) description of the location you want data for, either Point, Polygon, or Shapefile.</li>
+    <li>coords <b>(required)</b>: (list of integers) for loc_type Point: a list containing first the longitude, from -180 to 180, then the latitude, from -90 to 90. Example [-100, 50]. For loc_type Polygon, an array of coordinates of the bounding box for your polygon in the longitude, latitude order as for points. The array should be 5 rows by 2 columns. Start with the bottom left point, list the points clockwise, and repeat the first point.</li>
+    <li>region <i>(dependant)</i>: (string) if loc_type is Shapefile, include the name of the region to get values for. Choices include (with capitalization and spaces) Africa, Asia, Australia, Central America, Europe, Middle East, North America, South America</li>
+    <li>time <i>(dependant)</i>: (string) if model is gldas, a string with the 4 digit year you're interesting in or else a string for 'alltimes'.</li>
+    <li>level <i>(dependant)</i>: (string) if model is gfs, a string with the forecast level to get data for.</li>
+  </ul></li>
+  <li>Returns: JSON response describing the dates and files of available gfs data</li>
+  <code>{"values": [etc...], etc...}</code>
+
 {% endblock %}
 
 {% block content_dependent_styles %}
