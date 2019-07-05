@@ -22,10 +22,9 @@
     {% gizmo select_input levels %}
     {# {% gizmo select_input heights %} #}
   {% endif %}
-  <button class="btn btn-primary" role="button" id="usershape">Upload Shapefile and Get A Timeseries</button>
 
-  <li class="title" id="display" role="button">Map Styling Controls</li>
-  <div id="displayopts">
+  <button class="btn btn-default" role="button" id="display">View Map Styling Controls</button>
+  <div id="displayopts" style="display: none;">
     {% gizmo select_input colorscheme %}
     {% gizmo range_slider opacity %}
     {% gizmo select_input gjClr %}
@@ -34,6 +33,8 @@
     {% gizmo select_input gjFlClr %}
     {% gizmo range_slider gjFlOp %}
   </div>
+
+  <button class="btn btn-default" role="button" id="usershape">Upload Shapefile and Get A Timeseries</button>
 {% endblock %}
 
 {% block app_actions %}

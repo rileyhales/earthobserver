@@ -6,6 +6,7 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import api_view, authentication_classes
 
 from .options import app_configuration, get_gfsdate, get_eodatamodels, gldas_variables
+from .charts import getchart
 
 
 @api_view(['GET'])
@@ -32,7 +33,7 @@ def gldasdates(request):
     dates = {
         'start': start,
         'end': end,
-        'api_calls': 'Provide a 4 digit year or "alltimes"',
+        'api_calls': 'Provide a string type 4 digit year or "alltimes"',
     }
     return JsonResponse(dates)
 
@@ -47,3 +48,29 @@ def gldasvariables(request):
 @authentication_classes((TokenAuthentication,))
 def gfsdate(request):
     return JsonResponse({'gfsdate': get_gfsdate()})
+
+
+@api_view(['GET'])
+@authentication_classes((TokenAuthentication,))
+def timeseries(request):
+    parameters = request.GET
+    data = {}
+
+    # use try/except to make data dictionary because we want to check that all params have been given
+    try:
+        data['model'] = parameters['model']
+        data['variable'] = parameters['variable']
+        data['coords'] = parameters.getlist('coords')
+        data['loc_type'] = parameters['loc_type']
+
+        if data['loc_type'] == 'Shapefile':
+            data['region'] = parameters['region']
+
+        if data['model'] == 'gldas':
+            data['time'] = parameters['time']
+        elif data['model'] == 'gfs':
+            data['level'] = parameters['level']
+
+    except KeyError as e:
+        return JsonResponse({'Missing Parameter': str(e).replace('"', '').replace("'", '')})
+    return JsonResponse(getchart(data))

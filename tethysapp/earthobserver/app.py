@@ -68,6 +68,11 @@ class Earthobserver(TethysAppBase):
                 controller='earthobserver.api.eodatamodels',
             ),
             urlmap(
+                name='timeseries',
+                url='earthobserver/api/timeseries',
+                controller='earthobserver.api.timeseries',
+            ),
+            urlmap(
                 name='gldasvariables',
                 url='earthobserver/api/gldasvariables',
                 controller='earthobserver.api.gldasvariables',

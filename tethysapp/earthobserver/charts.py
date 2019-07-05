@@ -24,7 +24,7 @@ def getchart(data):
     var = str(data['variable'])
     coords = data['coords']
     model = data['model']
-    seriestype = data['seriestype']
+    loc_type = data['loc_type']
 
     # environment settings
     configs = app_configuration()
@@ -44,13 +44,13 @@ def getchart(data):
         files = [i for i in files if i.startswith(data['level'])]
     files.sort()
 
-    if seriestype == 'Point':
+    if loc_type == 'Point':
         values, units = pointchart(var, coords, path, files)
         type = 'Values at a Point'
-    elif seriestype == 'Polygon':
+    elif loc_type == 'Polygon':
         values, units = polychart(var, coords, path, files)
         type = 'Averaged over a Polygon'
-    elif seriestype == 'shapefile':
+    elif loc_type == 'Shapefile':
         values, units = polychart(var, coords, path, files)
         type = 'Average for ' + data['region']
 
@@ -80,8 +80,8 @@ def pointchart(var, coords, path, files):
     nc_lats = nc_obj['lat'][:]
     units = nc_obj[var].__dict__['units']
     # get the index number of the lat/lon for the point
-    lon_indx = (numpy.abs(nc_lons - coords[0])).argmin()
-    lat_indx = (numpy.abs(nc_lats - coords[1])).argmin()
+    lon_indx = (numpy.abs(nc_lons - int(coords[0]))).argmin()
+    lat_indx = (numpy.abs(nc_lats - int(coords[1]))).argmin()
     nc_obj.close()
 
     # extract values at each timestep
@@ -119,10 +119,10 @@ def polychart(var, coords, path, files):
     nc_lats = nc_obj['lat'][:]
     units = nc_obj[var].__dict__['units']
     # get a bounding box of the rectangle in terms of the index number of their lat/lons
-    minlon = (numpy.abs(nc_lons - coords[0][1][0])).argmin()
-    maxlon = (numpy.abs(nc_lons - coords[0][3][0])).argmin()
-    maxlat = (numpy.abs(nc_lats - coords[0][1][1])).argmin()
-    minlat = (numpy.abs(nc_lats - coords[0][3][1])).argmin()
+    minlon = (numpy.abs(nc_lons - int(coords[0][1][0]))).argmin()
+    maxlon = (numpy.abs(nc_lons - int(coords[0][3][0]))).argmin()
+    maxlat = (numpy.abs(nc_lats - int(coords[0][1][1]))).argmin()
+    minlat = (numpy.abs(nc_lats - int(coords[0][3][1]))).argmin()
     nc_obj.close()
 
     # extract values at each timestep

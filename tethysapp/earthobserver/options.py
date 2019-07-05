@@ -26,7 +26,7 @@ def get_eodatamodels():
 
 
 def get_gfsdate():
-    with open(os.path.join(App.get_app_workspace().path, 'gfstimestamp.txt'), 'r') as file:
+    with open(os.path.join(App.get_custom_setting("Local Thredds Folder Path"), 'gfs', 'last_run.txt'), 'r') as file:
         return file.read()
 
 

@@ -190,7 +190,7 @@ function getDrawnChart(drawnItems) {
             variable: eovar(),
             level: $("#levels").val(),
             time: $("#dates").val(),
-            seriestype: geojson[0]['geometry']['type']
+            loc_type: geojson[0]['geometry']['type']
         };
 
         // decide which ajax url you need based on drawing type
@@ -237,7 +237,7 @@ function getShapeChart(selectedregion) {
         variable: eovar(),
         level: $("#levels").val(),
         time: $("#dates").val(),
-        seriestype: geojson[0]['geometry']['type']
+        loc_type: 'Shapefile'
     };
 
     if (selectedregion === 'lastregion') {
