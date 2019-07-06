@@ -86,7 +86,10 @@ $('#charttype').change(function () {
 //     update();
 // });
 
-
+$("#display").click(function() {
+    $("#displayopts").toggle();
+});
+$("#use_vals").change(function () {clearMap();update()});
 $('#colorscheme').change(function () {clearMap();update();});
 $("#opacity").change(function () {layerObj.setOpacity($(this).val())});
 $('#gjClr').change(function () {styleGeoJSON();});
@@ -94,7 +97,3 @@ $("#gjOp").change(function () {styleGeoJSON();});
 $("#gjWt").change(function () {styleGeoJSON();});
 $('#gjFlClr').change(function () {styleGeoJSON();});
 $("#gjFlOp").change(function () {styleGeoJSON();});
-
-$("#display").click(function() {
-    $("#displayopts").toggle();
-});

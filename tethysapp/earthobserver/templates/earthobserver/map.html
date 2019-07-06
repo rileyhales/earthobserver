@@ -12,7 +12,7 @@
 
 {% block header_buttons %}
   <div class="header-button glyphicon-button" data-toggle="tooltip" data-placement="bottom" title="Upload Shapefile">
-      <a data-toggle="modal" data-target="#shp-modal"><span class="glyphicon glyphicon-export"></span></a>
+    <a data-toggle="modal" data-target="#shp-modal"><span class="glyphicon glyphicon-export"></span></a>
   </div>
 {% endblock %}
 
@@ -30,8 +30,16 @@
   {% endif %}
   <button class="btn btn-default btn-block" role="button" id="customShpChart">Timeseries for my own Shapefile</button>
   <br>
-  <button class="btn btn-default" role="button" id="display">View Map Styling Controls</button>
+  <div style="text-align: center"><button class="btn btn-default" role="button" id="display">View Map Styling Controls</button></div>
   <div id="displayopts" style="display: none;">
+    <div id="color-scales-gizmo" style="padding: 10px">
+      <div><strong>Custom Color Scale Min/Max Values</strong></div>
+      <div>
+        Min:<input id="cs_min" type="number" style="width: 20%;">
+        Max:<input id="cs_max" type="number" style="width: 20%;">
+        Use This? <input id="use_vals" type="checkbox">
+      </div>
+    </div>
     {% gizmo select_input colorscheme %}
     {% gizmo range_slider opacity %}
     {% gizmo select_input gjClr %}
@@ -72,7 +80,9 @@
                 <li>Your shapefile must contain only polygon data.</li>
                 <li>You must include the 4 files ending in the extensions "prj" "shp", "shx", and "dbf".</li>
                 <li>Your shapefile must use the WGS1984 Geographic Coordinate System or another GCS.</li>
-                <li>The EO data are 1/4 degree spatial resolution. If your polygons are too small, you will get an answer of zero.</li>
+                <li>The EO data are 1/4 degree spatial resolution. If your polygons are too small, you will get an
+                  answer of zero.
+                </li>
                 <li>The more polygons in the shapefile, the longer it will take to generate a timeseries.</li>
                 <li>Tethys will automatically delete your shapefile after it has been used.</li>
               </ul>

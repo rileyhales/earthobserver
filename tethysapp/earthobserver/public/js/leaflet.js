@@ -114,13 +114,20 @@ const bounds = {
 };
 
 function newLayer() {
+    let layer = $("#variables").val();
+
     let wmsurl;
     if (model === 'gldas') {
         wmsurl = threddsbase + 'gldas/' + $("#dates").val() + '.ncml';
     } else if (model === 'gfs') {
         wmsurl = threddsbase + 'gfs/' + $("#levels").val() + '_wms.ncml';
     }
-    let layer = $("#variables").val();
+
+    let cs_rng = bounds[model][layer];
+    if ($("#use_vals").is(":checked")) {
+        cs_rng = String($("#cs_min").val()) + ',' + String($("#cs_max").val())
+    }
+
     let wmsLayer = L.tileLayer.wms(wmsurl, {
         // version: '1.3.0',
         layers: layer,
@@ -132,7 +139,7 @@ function newLayer() {
         opacity: $("#opacity_raster").val(),
         BGCOLOR: '0x000000',
         styles: 'boxfill/' + $('#colorscheme').val(),
-        colorscalerange: bounds[model][layer],
+        colorscalerange: cs_rng,
     });
 
     return L.timeDimension.layer.wms(wmsLayer, {
@@ -148,14 +155,22 @@ function newLayer() {
 let legend = L.control({position: 'topright'});
 legend.onAdd = function () {
     let layer = $("#variables").val();
+
     let wmsurl;
     if (model === 'gldas') {
         wmsurl = threddsbase + 'gldas/' + $("#dates").val() + '.ncml';
     } else if (model === 'gfs') {
         wmsurl = threddsbase + 'gfs/' + $("#levels").val() + '_wms.ncml';
     }
+
+    let cs_rng = bounds[model][layer];
+    if ($("#use_vals").is(":checked")) {
+        cs_rng = String($("#cs_min").val()) + ',' + String($("#cs_max").val())
+    }
+
+
     let div = L.DomUtil.create('div', 'legend');
-    let url = wmsurl + "?REQUEST=GetLegendGraphic&LAYER=" + layer + "&PALETTE=" + $('#colorscheme').val() + "&COLORSCALERANGE=" + bounds[model][layer];
+    let url = wmsurl + "?REQUEST=GetLegendGraphic&LAYER=" + layer + "&PALETTE=" + $('#colorscheme').val() + "&COLORSCALERANGE=" + cs_rng;
     div.innerHTML = '<img src="' + url + '" alt="legend" style="width:100%; float:right;">';
     return div
 };
