@@ -10,6 +10,12 @@
   </div>
 {% endblock %}
 
+{% block header_buttons %}
+  <div class="header-button glyphicon-button" data-toggle="tooltip" data-placement="bottom" title="Upload Shapefile">
+      <a data-toggle="modal" data-target="#shp-modal"><span class="glyphicon glyphicon-export"></span></a>
+  </div>
+{% endblock %}
+
 {% block app_navigation_items %}
   <li class="title">Data Controls</li>
   {% if model == 'gldas' %}
@@ -22,7 +28,8 @@
     {% gizmo select_input levels %}
     {# {% gizmo select_input heights %} #}
   {% endif %}
-
+  <button class="btn btn-default btn-block" role="button" id="customShpChart">Timeseries for my own Shapefile</button>
+  <br>
   <button class="btn btn-default" role="button" id="display">View Map Styling Controls</button>
   <div id="displayopts" style="display: none;">
     {% gizmo select_input colorscheme %}
@@ -34,7 +41,6 @@
     {% gizmo range_slider gjFlOp %}
   </div>
 
-  <button class="btn btn-default" role="button" id="usershape">Upload Shapefile and Get A Timeseries</button>
 {% endblock %}
 
 {% block app_actions %}
@@ -45,6 +51,47 @@
   <div id="outer-container" style="overflow-y: auto">
     <div id="map"></div>
     <div id="highchart"></div>
+  </div>
+{% endblock %}
+
+{% block after_app_content %}
+  <!-- Upload Shapefile Data Modal -->
+  <div class="modal fade" id="shp-modal" tabindex="-1" role="dialog" aria-labelledby="shp-modal-label">
+    <div class="modal-dialog" role="document">
+      <form action="" method="post" enctype="multipart/form-data">.
+        {% csrf_token %}
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                    aria-hidden="true">X</span></button>
+            <h2 class="modal-title" id="about-modal-onamet-label">Upload A Shapefile</h2>
+          </div>
+          <div class="modal-body">
+            <div>Guidelines for using a custom shapefile:
+              <ul>
+                <li>Your shapefile must contain only polygon data.</li>
+                <li>You must include the 4 files ending in the extensions "prj" "shp", "shx", and "dbf".</li>
+                <li>Your shapefile must use the WGS1984 Geographic Coordinate System or another GCS.</li>
+                <li>The EO data are 1/4 degree spatial resolution. If your polygons are too small, you will get an answer of zero.</li>
+                <li>The more polygons in the shapefile, the longer it will take to generate a timeseries.</li>
+                <li>Tethys will automatically delete your shapefile after it has been used.</li>
+              </ul>
+            </div>
+            <br>
+            <div class="form-group">
+              <input type="file" class="local-file-upload" id="shapefile-upload" accept=".shp,.prj,.shx,.dbf" multiple>
+            </div>
+            <div>Once you've selected a shapefile, click submit to upload it.</div>
+            <div id="loading" style="display: none; text-align: center"><img
+                    src="https://media.giphy.com/media/jAYUbVXgESSti/giphy.gif"></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-success" id="uploadshp">Submit</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </form>
+    </div>
   </div>
 {% endblock %}
 
@@ -100,6 +147,7 @@
   <script type="text/javascript" src="{% static 'earthobserver/js/geojsons3.js' %}"></script>
 
   <!-- scripts I wrote for the app, main should go last -->
+  <script type="text/javascript" src="{% static 'earthobserver/js/customShp.js' %}"></script>
   <script type="text/javascript" src="{% static 'earthobserver/js/highcharts.js' %}"></script>
   <script type="text/javascript" src="{% static 'earthobserver/js/leaflet.js' %}"></script>
   <script type="text/javascript" src="{% static 'earthobserver/js/map.js' %}"></script>

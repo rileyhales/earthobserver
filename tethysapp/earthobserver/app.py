@@ -18,7 +18,7 @@ class Earthobserver(TethysAppBase):
     tags = 'Earth Observations, Time Series, Maps, Charts, Downloads'
     enable_feedback = False
     feedback_emails = []
-    version = 'Development - 3 July 2019'
+    version = 'Development - 5 July 2019'
 
     def url_maps(self):
         """
@@ -54,6 +54,11 @@ class Earthobserver(TethysAppBase):
                 name='getChart',
                 url='earthobserver/ajax/getChart',
                 controller='earthobserver.ajax.getChart',
+            ),
+            urlmap(
+                name='uploadShapefile',
+                url='earthobserver/ajax/uploadShapefile',
+                controller='earthobserver.ajax.uploadshapefile',
             ),
 
             # url maps for api calls

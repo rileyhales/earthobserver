@@ -48,15 +48,6 @@ mapObj.on("mousemove", function (event) {
     $("#mouse-position").html('Lat: ' + event.latlng.lat.toFixed(5) + ', Lon: ' + event.latlng.lng.toFixed(5));
 });
 
-let wmsurl;
-if (model === 'gldas') {
-    wmsurl = threddsbase + 'gldas/' + $("#dates").val() + '.ncml';
-} else if (model === 'gfs') {
-    wmsurl = threddsbase + 'gfs/' + $("#levels").val() + '_wms.ncml';
-} else {
-    alert('Unable to detect an EO data model. Go back to the previous page and try again')
-    // todo redirect the user to the home page
-}
 let layerObj = newLayer();              // adds the wms raster layer
 let controlsObj = makeControls();       // the layer toggle controls top-right corner
 legend.addTo(mapObj);                   // add the legend graphic to the map
@@ -89,7 +80,7 @@ $('#charttype').change(function () {
     makechart();
 });
 
-// todo change this
+// todo add this
 // $("#levels").change(function () {
 //     clearMap();
 //     update();

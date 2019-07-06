@@ -176,18 +176,11 @@ function getDrawnChart(drawnItems) {
             }
         }
 
-        // setup a parameters json to generate the right timeseries
-        let eovar = function() {
-                if (model === 'gldas') {
-                    return $('#gldas_vars').val()
-                } else if (model === 'gfs') {
-                    return $("#gfs_vars").val()
-                }
-            };
+        // setup a parameters json to generate the right timeserie
         let data = {
             coords: coords,
             model: model,
-            variable: eovar(),
+            variable: $("#variables").val(),
             level: $("#levels").val(),
             time: $("#dates").val(),
             loc_type: geojson[0]['geometry']['type']
@@ -224,17 +217,9 @@ function getShapeChart(selectedregion) {
     chart.showLoading();
 
     // setup a parameters json to generate the right timeseries
-    let eovar = function() {
-            if (model === 'gldas') {
-                return $('#gldas_vars').val()
-            } else if (model === 'gfs') {
-                return $("#gfs_vars").val()
-            }
-        };
     let data = {
-        coords: coords,
         model: model,
-        variable: eovar(),
+        variable: $("#variables").val(),
         level: $("#levels").val(),
         time: $("#dates").val(),
         loc_type: 'Shapefile'
@@ -243,8 +228,12 @@ function getShapeChart(selectedregion) {
     if (selectedregion === 'lastregion') {
         // if we want to update, change the region to the last completed region
         data['region'] = currentregion;
+    } else if (selectedregion === 'customshape') {
+        data['region'] = selectedregion;
+        currentregion = selectedregion;
     } else {
         // otherwise, the new selection is the current region on the chart
+        data['region'] = selectedregion;
         currentregion = selectedregion;
     }
 
@@ -263,13 +252,18 @@ function getShapeChart(selectedregion) {
 
 function makechart() {
     if (chartdata !== null) {
-        let type = $("#charttype").val();
-        if (type === 'timeseries') {
-            newHighchart(chartdata);
-        } else if (type === 'yearmulti' || type === 'monthmulti') {
-            newMultilineChart(chartdata);
-        } else if (type === 'yearbox' || type === 'monthbox') {
-            newBoxPlot(chartdata);
+        if (model === 'gldas') {
+            let type = $("#charttype").val();
+            if (type === 'timeseries') {
+                newHighchart(chartdata);
+            } else if (type === 'yearmulti' || type === 'monthmulti') {
+                newMultilineChart(chartdata);
+            } else if (type === 'yearbox' || type === 'monthbox') {
+                newBoxPlot(chartdata);
+            }
+        } else {
+            newHighchart(chartdata)
         }
+
     }
 }

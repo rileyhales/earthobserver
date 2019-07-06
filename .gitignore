@@ -10,3 +10,8 @@
 .idea/
 *.tiff
 *.nc4
+*.nc
+*.shp
+*.shx
+*.prj
+*.dbf

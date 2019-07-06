@@ -10,7 +10,7 @@ import numpy
 import pandas
 import statistics
 
-from .options import app_configuration
+from .options import app_configuration, gldas_variables, gfs_variables
 from .app import Earthobserver as App
 
 
@@ -22,40 +22,56 @@ def getchart(data):
     """
     # input parameters
     var = str(data['variable'])
-    coords = data['coords']
     model = data['model']
     loc_type = data['loc_type']
 
     # environment settings
     configs = app_configuration()
     path = configs['threddsdatadir']
-    if model == 'gldas':
-        path = os.path.join(path, 'gldas', 'raw')
-    elif model == 'gfs':
-        path = os.path.join(path, 'gfs', configs['timestamp'], 'netcdfs')
+    timestamp = configs['timestamp']
 
     # list the netcdfs to be processed
-    allfiles = os.listdir(path)
-    files = [nc for nc in allfiles if nc.endswith('.nc') or nc.endswith('.nc4')]
     if model == 'gldas':
+        path = os.path.join(path, 'gldas', 'raw')
+        allfiles = os.listdir(path)
+        files = [nc for nc in allfiles if nc.endswith('.nc4')]
+
         if data['time'] != 'alltimes':
             files = [i for i in files if data['time'] in i]
+
+        variables = gldas_variables()
+        for key in variables:
+            if variables[key] == data['variable']:
+                name = key
+                name = name
+                break
     if model == 'gfs':
-        files = [i for i in files if i.startswith(data['level'])]
+        path = os.path.join(path, 'gfs', timestamp, 'netcdfs')
+        allfiles = os.listdir(path)
+        files = [nc for nc in allfiles if nc.startswith(data['level']) and nc.endswith('.nc')]
+
+        variables = gfs_variables()
+        for option in variables:
+            if option[1] == data['variable']:
+                name = option[0]
+                break
     files.sort()
 
     if loc_type == 'Point':
-        values, units = pointchart(var, coords, path, files)
+        values, units = pointchart(var, data['coords'], path, files)
         type = 'Values at a Point'
     elif loc_type == 'Polygon':
-        values, units = polychart(var, coords, path, files)
+        values, units = polychart(var, data['coords'], path, files)
         type = 'Averaged over a Polygon'
     elif loc_type == 'Shapefile':
-        values, units = polychart(var, coords, path, files)
-        type = 'Average for ' + data['region']
+        values, units = shpchart(var, path, files, data['region'], data['user'])
+        if data['region'] == 'customshape':
+            type = 'Average for user\'s shapefile'
+        else:
+            type = 'Average for ' + data['region']
 
     values.sort(key=lambda tup: tup[0])
-    resp = {'values': values, 'units': units, 'variable': var, 'type': type}
+    resp = {'values': values, 'units': units, 'variable': var, 'type': type, 'name': name}
 
     # if model == 'gldas':
     #     resp['multiline'], resp['boxplot'], resp['categories'] = makestatplots(values, data['time'])
@@ -146,7 +162,7 @@ def polychart(var, coords, path, files):
     return values, units
 
 
-def shpchart(var, path, files, region):
+def shpchart(var, path, files, region, user):
     """
     Description: This script accepts a netcdf file in a geographic coordinate system, specifically the NASA GLDAS
         netcdfs, and extracts the data from one variable and the lat/lon steps to create a geotiff of that information.
@@ -165,15 +181,18 @@ def shpchart(var, path, files, region):
         shutil.rmtree(geotiffdir)
     os.mkdir(geotiffdir)
 
+    # open the netcdf and get metadata
+    nc_obj = netCDF4.Dataset(os.path.join(path, files[0]), 'r')
+    lat = nc_obj.variables['lat'][:]
+    lon = nc_obj.variables['lon'][:]
+    units = nc_obj[var].__dict__['units']
+    geotransform = rasterio.transform.from_origin(lon.min(), lat.max(), lat[1] - lat[0], lon[1] - lon[0])
+    nc_obj.close()
+
     # read netcdf, create geotiff, zonal statistics, format outputs for highcharts plotting
     for file in files:
-        # open the netcdf and get metadata
+        # open the netcdf and get the data array
         nc_obj = netCDF4.Dataset(os.path.join(path, file), 'r')
-        lat = nc_obj.variables['lat'][:]
-        lon = nc_obj.variables['lon'][:]
-        units = nc_obj[var].__dict__['units']
-
-        # get the variable's data array
         var_data = nc_obj.variables[var][:]  # this is the array of values for the nc_obj
         array = numpy.asarray(var_data)[0, :, :]  # converting the data type
         array[array < -9000] = numpy.nan  # use the comparator to drop nodata fills
@@ -188,9 +207,13 @@ def shpchart(var, path, files, region):
         time = calendar.timegm(t_val.utctimetuple()) * 1000
 
         # file paths and settings
-        shppath = os.path.join(wrkpath, 'shapefiles', region, region.replace(' ', '') + '.shp')
+        if region == 'customshape':
+            shppath = App.get_user_workspace(user).path
+            shp = [i for i in os.listdir(shppath) if i.endswith('.shp')]
+            shppath = os.path.join(shppath, shp[0])
+        else:
+            shppath = os.path.join(wrkpath, 'shapefiles', region, region.replace(' ', '') + '.shp')
         gtiffpath = os.path.join(wrkpath, 'geotiffs', 'geotiff.tif')
-        geotransform = rasterio.transform.from_origin(lon.min(), lat.max(), lat[1] - lat[0], lon[1] - lon[0])
 
         with rasterio.open(gtiffpath, 'w', driver='GTiff', height=len(lat), width=len(lon), count=1, dtype='float32',
                            nodata=numpy.nan, crs='+proj=latlong', transform=geotransform) as newtiff:
