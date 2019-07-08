@@ -27,6 +27,7 @@
         </div>
 
         <div class="modal-body">
+          This application shows GLDAS and GFS Earth Observation Data.
         </div>
 
         <div class="modal-footer">
@@ -41,7 +42,7 @@
 {% block app_navigation_items %}
   {% url "earthobserver:home" as home %}
   {% url "earthobserver:apihelp" as apihelp %}
-  {% url "earthobserver:manage" as manage %}
+  {% url "earthobserver:data" as data %}
 
   <li class="title">App Navigation</li>
   <li class="{% if request.path == home %}active{% endif %}"><a href="{{ home }}">Home</a></li>
@@ -50,6 +51,6 @@
   <li><a target="_blank" href="https://youtube.com">Watch a Video Tutorial</a></li>
   {% if user.is_superuser %}
     <li class="title">For Super Users</li>
-    <li class="{% if request.path == manage %}active{% endif %}"><a href="{{ manage }}">Manage Data Workflows</a></li>
+    <li class="{% if request.path == data %}active{% endif %}"><a href="{{ data }}">Manage Data Workflows</a></li>
   {% endif %}
 {% endblock %}

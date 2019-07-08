@@ -28,15 +28,17 @@
     {% gizmo select_input levels %}
     {# {% gizmo select_input heights %} #}
   {% endif %}
+
   <button class="btn btn-default btn-block" role="button" id="customShpChart">Timeseries for my own Shapefile</button>
   <br>
+
   <div style="text-align: center"><button class="btn btn-default" role="button" id="display">View Map Styling Controls</button></div>
   <div id="displayopts" style="display: none;">
-    <div id="color-scales-gizmo" style="padding: 10px">
-      <div><strong>Custom Color Scale Min/Max Values</strong></div>
+    <div id="color-scales-gizmo" style="padding-top: 12px; padding-bottom: 12px">
+      <div style="padding-bottom: 4px"><strong>Custom Color Scale Min/Max Values</strong></div>
       <div>
-        Min:<input id="cs_min" type="number" style="width: 20%;">
-        Max:<input id="cs_max" type="number" style="width: 20%;">
+        Min: <input id="cs_min" type="number" style="width: 20%;" value="0">
+        Max: <input id="cs_max" type="number" style="width: 20%;" value="100">
         Use This? <input id="use_vals" type="checkbox">
       </div>
     </div>

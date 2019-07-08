@@ -12,13 +12,13 @@ class Earthobserver(TethysAppBase):
     package = 'earthobserver'
     root_url = 'earthobserver'
     color = '#002366'
-    description = 'A tethys app for visualizing Earth Observation (EO) products including GLDAS and GFS.\n' \
-                  'View time-animated maps, generate charts of data, extract and download time series data ' \
-                  'at a point, in a bounding box, or in a shapefile'
+    description = 'A visualization tool for Earth Observation (EO) products including GLDAS and GFS. View ' \
+                  'time-animated maps, generate and download charts of timeseries data at a point, in a bounding ' \
+                  'box, or in a shapefile. Manages data downloading and updating workflows to keep EO data current.'
     tags = 'Earth Observations, Time Series, Maps, Charts, Downloads'
     enable_feedback = False
     feedback_emails = []
-    version = 'Development - 5 July 2019'
+    version = 'Development - 8 July 2019'
 
     def url_maps(self):
         """
@@ -44,21 +44,26 @@ class Earthobserver(TethysAppBase):
                 controller='earthobserver.controllers.apihelp'
             ),
             urlmap(
-                name='manage',
-                url='earthobserver/manage',
-                controller='earthobserver.controllers.manage'
+                name='data',
+                url='earthobserver/data',
+                controller='earthobserver.controllers.data'
             ),
 
             # url maps for ajax calls
             urlmap(
                 name='getChart',
                 url='earthobserver/ajax/getChart',
-                controller='earthobserver.ajax.getChart',
+                controller='earthobserver.ajax.getchart',
             ),
             urlmap(
                 name='uploadShapefile',
                 url='earthobserver/ajax/uploadShapefile',
                 controller='earthobserver.ajax.uploadshapefile',
+            ),
+            urlmap(
+                name='rungfs',
+                url='earthobserver/ajax/rungfs',
+                controller='earthobserver.ajax.rungfs',
             ),
 
             # url maps for api calls

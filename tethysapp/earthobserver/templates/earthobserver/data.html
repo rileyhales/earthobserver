@@ -1,0 +1,63 @@
+{% extends "earthobserver/base.html" %}
+{% load tethys_gizmos staticfiles %}
+{% load tethys_gizmos %}
+{% load staticfiles %}
+{% csrf_token %}
+
+{% block app_content %}
+  <h1>Data Management</h1>
+
+  <h3>GLDAS</h3>
+  <li>Months of GLDAS available locally: {{ gldas_months }}</li>
+  <li>Oldest GLDAS data month: {{ gldas_start }}</li>
+  <li>Newest GLDAS data month: {{ gldas_end }}</li>
+  <li>To download more GLDAS data, use the gldasworkflow.sh file found in this app's directory.</li>
+
+  <h3>GFS</h3>
+  <li>Timestamp of available GFS forecast: {{ gfs_time }}</li>
+  <li>Number of 6-hr forecast steps available: {{ gfs_steps }}</li>
+  <li>Date of first GFS Forecast step: {{ gfs_start }}</li>
+  <li>Date of last GFS Forecast step: {{ gfs_end }}</li>
+  <button class="btn btn-success" role="button" id="gfs">Download GFS data</button>
+
+{% endblock %}
+
+{% block content_dependent_styles %}
+  {{ block.super }}
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <!-- Allows csrf verification with AJAX -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+  <script>
+      // Getting the csrf token
+      let csrftoken = Cookies.get('csrftoken');
+
+      function csrfSafeMethod(method) {
+          // these HTTP methods do not require CSRF protection
+          return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+      }
+
+      $.ajaxSetup({
+          beforeSend: function (xhr, settings) {
+              if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                  xhr.setRequestHeader("X-CSRFToken", csrftoken);
+              }
+          }
+      });
+
+      function update() {
+          $.ajax({
+              url: '/apps/earthobserver/ajax/rungfs/',
+              data: JSON.stringify({}),
+              dataType: 'json',
+              contentType: "application/json",
+              method: 'POST',
+              success: function (result) {
+                  alert(result['status']);
+              }
+          })
+      }
+  </script>
+{% endblock %}

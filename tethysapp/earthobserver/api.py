@@ -6,7 +6,7 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import api_view, authentication_classes
 
 from .options import app_configuration, get_gfsdate, get_eodatamodels, gldas_variables, gfs_forecastlevels
-from .charts import getchart
+from .charts import newchart
 
 
 @api_view(['GET'])
@@ -116,4 +116,4 @@ def timeseries(request):
 
     except KeyError as e:
         return JsonResponse({'Missing Parameter': str(e).replace('"', '').replace("'", '')})
-    return JsonResponse(getchart(data))
+    return JsonResponse(newchart(data))

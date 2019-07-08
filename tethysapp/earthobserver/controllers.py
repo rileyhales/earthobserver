@@ -195,7 +195,7 @@ def apihelp(request):
 
 
 @login_required()
-def manage(request):
+def data(request):
     if not User.is_superuser:
         return JsonResponse({'Permission Denied': 'Ask a Tethys Administrator'})
 
@@ -249,4 +249,4 @@ def manage(request):
         'gfs_start': gfs_start,
         'gfs_end': gfs_end,
     }
-    return render(request, 'earthobserver/manage.html', context)
+    return render(request, 'earthobserver/data.html', context)

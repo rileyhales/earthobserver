@@ -14,7 +14,7 @@ from .options import app_configuration, gldas_variables, gfs_variables
 from .app import Earthobserver as App
 
 
-def getchart(data):
+def newchart(data):
     """
     Determines the environment for generating a timeseries chart
     :param data: a JSON object with params from the UI/API call

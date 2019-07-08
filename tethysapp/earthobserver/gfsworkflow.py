@@ -331,3 +331,7 @@ def run_gfs_workflow():
 
     logging.info('\n\nGFS Workflow completed successfully on ' + datetime.datetime.utcnow().strftime("%D at %R"))
     return 'GFS Workflow Completed- Normal Finish'
+
+
+if __name__ == '__main__':
+    run_gfs_workflow()

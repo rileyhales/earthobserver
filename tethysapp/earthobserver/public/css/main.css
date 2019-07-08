@@ -1,4 +1,21 @@
 .modelinfo {
-    text-align: center;
-    overflow-y: auto;
+    width: 60%;
+    margin-left: auto;
+    margin-right: auto;
+    float: left;
+    padding-left: 30px;
+    vertical-align: center;
+}
+.abouticon {
+    width: 250px;
+    margin-left: auto;
+    margin-right: auto;
+    float: left;
+}
+
+.aboutwrap {
+    margin-left: auto;
+    margin-right: auto;
+    float: left;
+    padding-top: 35px;
 }
