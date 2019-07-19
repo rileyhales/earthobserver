@@ -1,10 +1,11 @@
-from django.contrib.auth.decorators import login_required
+# from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from tethys_sdk.gizmos import SelectInput, RangeSlider
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 
 from .app import Earthobserver as App
+from .gfsworkflow import run_gfs_workflow
 from .options import gldas_variables, timecoverage, get_charttypes, gfs_variables, wms_colors, geojson_colors,\
     currentgfs, app_settings, structure_byvars, get_eodatamodels, get_gfsdate
 
@@ -13,7 +14,7 @@ import datetime
 import logging
 
 
-@login_required()
+# @login_required()
 def home(request):
     """
     Controller for the home page.
@@ -32,7 +33,7 @@ def home(request):
     return render(request, 'earthobserver/home.html', context)
 
 
-@login_required()
+# @login_required()
 def map(request):
     """
     Controller for the map page.
@@ -186,7 +187,7 @@ def map(request):
     return render(request, 'earthobserver/map.html', context)
 
 
-@login_required()
+# @login_required()
 def apihelp(request):
     context = {
         'version': App.version,
@@ -194,12 +195,12 @@ def apihelp(request):
     return render(request, 'earthobserver/apihelp.html', context)
 
 
-@login_required()
+# @login_required()
 def data(request):
     if not User.is_superuser:
         return JsonResponse({'Permission Denied': 'Ask a Tethys Administrator'})
 
-    threddspath = app_configuration()['threddsdatadir']
+    threddspath = app_settings()['threddsdatadir']
 
     path = os.path.join(threddspath, 'gldas', 'raw')
     files = os.listdir(path)
@@ -263,18 +264,18 @@ def data(request):
     return render(request, 'earthobserver/data.html', context)
 
 
-@login_required()
+# @login_required()
 def rungfs(request):
     # Check for user permissions here rather than with a decorator so that we can log the failure
     if not User.is_superuser:
         logging.basicConfig(
-            filename=app_configuration()['logfile'], filemode='a', level=logging.INFO, format='%(message)s')
+            filename=app_settings()['logfile'], filemode='a', level=logging.INFO, format='%(message)s')
         logging.info('A non-superuser tried to run this workflow on ' + datetime.datetime.utcnow().strftime("%D at %R"))
         logging.info('The user was ' + str(request.user))
         return JsonResponse({'Unauthorized User': 'You do not have permission to run the workflow. Ask a superuser.'})
 
     # enable logging to track the progress of the workflow and for debugging
-    logging.basicConfig(filename=app_configuration()['logfile'], filemode='w', level=logging.INFO, format='%(message)s')
+    logging.basicConfig(filename=app_settings()['logfile'], filemode='w', level=logging.INFO, format='%(message)s')
     logging.info('Workflow initiated on ' + datetime.datetime.utcnow().strftime("%D at %R"))
 
     # Set the clobber option so that the right folders get deleted/regenerated in the set_environment functions
