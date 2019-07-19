@@ -49,6 +49,13 @@ class Earthobserver(TethysAppBase):
                 controller='earthobserver.controllers.data'
             ),
 
+            # url maps for data processing workflows
+            urlmap(
+                name='rungfs',
+                url='earthobserver/workflows/rungfs',
+                controller='earthobserver.controllers.rungfs',
+            ),
+
             # url maps for ajax calls
             urlmap(
                 name='getChart',
@@ -61,9 +68,9 @@ class Earthobserver(TethysAppBase):
                 controller='earthobserver.ajax.uploadshapefile',
             ),
             urlmap(
-                name='rungfs',
-                url='earthobserver/ajax/rungfs',
-                controller='earthobserver.ajax.rungfs',
+                name='getLevelsForVar',
+                url='gfs/ajax/getLevelsForVar',
+                controller='gfs.ajax.get_levels_for_variable'
             ),
 
             # url maps for api calls

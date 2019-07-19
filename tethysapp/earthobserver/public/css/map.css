@@ -24,21 +24,9 @@ html, body, #app-content, #inner-app-content, #outer-container {
 }
 
 #displayopts {
-    /*display: none;*/
     overflow-y: auto;
-    /*border-style: solid;*/
-    /*border-width: medium;*/
-    /*border-spacing: 5px*/
 }
 
-hr {
-    /*display: block;*/
-    margin-before: 0;
-    margin-after: 0;
-    padding: 0px;
-    /*margin-start: auto;*/
-    /*margin-end: auto;*/
-    overflow: hidden;
-    border-style: inset;
-    border-width: 2px;
-}
+.ui-datepicker-calendar {
+    display: none;
+    }

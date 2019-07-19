@@ -5,7 +5,7 @@ from django.http import JsonResponse
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import api_view, authentication_classes
 
-from .options import app_configuration, get_gfsdate, get_eodatamodels, gldas_variables, gfs_forecastlevels
+from .options import app_settings, get_gfsdate, get_eodatamodels, gldas_variables, gfs_forecastlevels
 from .charts import newchart
 
 
@@ -27,7 +27,7 @@ def eodatamodels(request):
 @api_view(['GET'])
 @authentication_classes((TokenAuthentication,))
 def gldasdates(request):
-    path = app_configuration()['threddsdatadir']
+    path = app_settings()['threddsdatadir']
     path = os.path.join(path, 'gldas', 'raw')
     files = os.listdir(path)
     files.sort()
@@ -56,7 +56,7 @@ def gfslevels(request):
 @api_view(['GET'])
 @authentication_classes((TokenAuthentication,))
 def gfsdates(request):
-    threddspath = app_configuration()['threddsdatadir']
+    threddspath = app_settings()['threddsdatadir']
     timestamp = get_gfsdate()
     if not timestamp == 'clobbered':
         gfs_time = datetime.datetime.strptime(timestamp, "%Y%m%d%H")

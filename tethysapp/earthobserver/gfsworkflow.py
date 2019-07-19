@@ -10,7 +10,7 @@ from .options import *
 
 def setenvironment():
     """
-    Dependencies: os, shutil, datetime, urllib.request, app_configuration (options)
+    Dependencies: os, shutil, datetime, urllib.request, app_settings (options)
     """
     logging.info('\nSetting the Environment for the GFS Workflow')
     # determine the most day and hour of the day timestamp of the most recent GFS forecast
@@ -26,27 +26,32 @@ def setenvironment():
     logging.info('determined the timestamp to download: ' + timestamp)
 
     # get folder paths for the environment
-    threddspath = app_configuration()['threddsdatadir']
+    threddspath = app_settings()['threddsdatadir']
+    threddspath = os.path.join(threddspath, 'gfs')
 
     # perform a redundancy check, if the last timestamp is the same as current, abort the workflow
-    timefile = os.path.join(threddspath, 'gfs', 'last_run.txt')
-    with open(timefile, 'r') as file:
-        lasttime = file.readline()
-        if lasttime == timestamp:
-            # use the redundant check to skip the function because its already been run
-            redundant = True
-            logging.info('The last recorded timestamp is the timestamp we determined, aborting workflow')
-            return threddspath, timestamp, redundant
-        elif lasttime == 'clobbered':
-            # if you marked clobber is true, dont check for old folders from partially completed workflows
-            redundant = False
-        else:
-            # check to see if there are remnants of partially completed runs and dont destroy old folders
-            redundant = False
-            test = os.path.join(threddspath, timestamp, 'netcdfs')
-            if os.path.exists(test):
-                logging.info('There are directories for this timestep but the workflow wasn\'t finished. Analyzing...')
+    timefile = os.path.join(threddspath, 'last_run.txt')
+    try:
+        with open(timefile, 'r') as file:
+            lasttime = file.readline()
+            if lasttime == timestamp:
+                # use the redundant check to skip the function because its already been run
+                redundant = True
+                logging.info('The last recorded timestamp is the timestamp we determined, aborting workflow')
                 return threddspath, timestamp, redundant
+            elif lasttime == 'clobbered':
+                # if you marked clobber is true, dont check for old folders from partially completed workflows
+                redundant = False
+            else:
+                # check to see if there are remnants of partially completed runs and dont destroy old folders
+                redundant = False
+                test = os.path.join(threddspath, timestamp, 'netcdfs')
+                if os.path.exists(test):
+                    logging.info('There are directories for this timestep but the workflow wasn\'t finished. '
+                                 'Attempting to resume...')
+                    return threddspath, timestamp, redundant
+    except FileNotFoundError:
+        redundant = False
 
     # create the file structure and their permissions for the new data
     logging.info('Creating THREDDS file structure')
@@ -165,7 +170,7 @@ def set_wmsbounds(threddspath, timestamp):
 
 def grib_to_netcdf(threddspath, timestamp):
     """
-    Dependencies: xarray, netcdf4, os, shutil, app_configuration (options)
+    Dependencies: xarray, netcdf4, os, shutil, app_settings (options)
     """
     logging.info('\nStarting Grib Conversions')
     # setting the environment file paths
@@ -317,7 +322,7 @@ def run_gfs_workflow():
     succeeded = download_gfs(threddspath, timestamp)
     if not succeeded:
         return 'Workflow Aborted- Downloading Errors Occurred'
-    set_wmsbounds(threddspath, timestamp)
+    # set_wmsbounds(threddspath, timestamp)
 
     # convert to netcdfs
     grib_to_netcdf(threddspath, timestamp)
@@ -326,7 +331,7 @@ def run_gfs_workflow():
     # finish things up
     cleanup(threddspath, timestamp)
     logging.info('\nAll finished- writing the timestamp used on this run to a txt file')
-    with open(os.path.join(threddspath, 'gfs', 'last_run.txt'), 'w') as file:
+    with open(os.path.join(threddspath, 'last_run.txt'), 'w') as file:
         file.write(timestamp)
 
     logging.info('\n\nGFS Workflow completed successfully on ' + datetime.datetime.utcnow().strftime("%D at %R"))

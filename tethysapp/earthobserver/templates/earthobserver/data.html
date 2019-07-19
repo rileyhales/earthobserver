@@ -19,6 +19,7 @@
   <li>Date of first GFS Forecast step: {{ gfs_start }}</li>
   <li>Date of last GFS Forecast step: {{ gfs_end }}</li>
   <button class="btn btn-success" role="button" id="gfs">Download GFS data</button>
+  Clobber?   <input id="clobber" type="checkbox">
 
 {% endblock %}
 
@@ -46,11 +47,14 @@
               }
           }
       });
-
-      function update() {
+      $("#gfs").click(function () {
+          let data = JSON.stringify({});
+          if ($("#clobber").is(":checked")) {
+              data = JSON.stringify({'clobber': 'true'})
+          }
           $.ajax({
               url: '/apps/earthobserver/ajax/rungfs/',
-              data: JSON.stringify({}),
+              data: data,
               dataType: 'json',
               contentType: "application/json",
               method: 'POST',
@@ -58,6 +62,6 @@
                   alert(result['status']);
               }
           })
-      }
+      });
   </script>
 {% endblock %}

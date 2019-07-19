@@ -10,7 +10,7 @@ import numpy
 import pandas
 import statistics
 
-from .options import app_configuration, gldas_variables, gfs_variables
+from .options import app_settings, gldas_variables, gfs_variables
 from .app import Earthobserver as App
 
 
@@ -26,7 +26,7 @@ def newchart(data):
     loc_type = data['loc_type']
 
     # environment settings
-    configs = app_configuration()
+    configs = app_settings()
     path = configs['threddsdatadir']
     timestamp = configs['timestamp']
 
@@ -84,7 +84,7 @@ def pointchart(var, coords, path, files):
     Description: generates a timeseries for a given point and given variable defined by the user.
     Arguments: A dictionary object from the AJAX-ed JSON object that contains coordinates and the variable name.
     Author: Riley Hales
-    Dependencies: netcdf4, numpy, datetime, os, calendar, app_configuration (options)
+    Dependencies: netcdf4, numpy, datetime, os, calendar, app_settings (options)
     Last Updated: Oct 11 2018
     """
     # return items
@@ -123,7 +123,7 @@ def polychart(var, coords, path, files):
     Description: generates a timeseries for a given point and given variable defined by the user.
     Arguments: A dictionary object from the AJAX-ed JSON object that contains coordinates and the variable name.
     Author: Riley Hales
-    Dependencies: netcdf4, numpy, datetime, os, calendar, app_configuration (options)
+    Dependencies: netcdf4, numpy, datetime, os, calendar, app_settings (options)
     Last Updated: May 14 2019
     """
     # return items
@@ -166,7 +166,7 @@ def shpchart(var, path, files, region, user):
     """
     Description: This script accepts a netcdf file in a geographic coordinate system, specifically the NASA GLDAS
         netcdfs, and extracts the data from one variable and the lat/lon steps to create a geotiff of that information.
-    Dependencies: netCDF4, numpy, rasterio, rasterstats, os, shutil, calendar, datetime, app_configuration (options)
+    Dependencies: netCDF4, numpy, rasterio, rasterstats, os, shutil, calendar, datetime, app_settings (options)
     Params: View README.md
     Returns: Creates a geotiff named 'geotiff.tif' in the directory specified
     Author: Riley Hales, RCH Engineering, March 2019

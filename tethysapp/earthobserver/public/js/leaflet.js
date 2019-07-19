@@ -25,8 +25,6 @@ function map() {
 
 function basemaps() {
     // create the basemap layers
-    // let Esri_WorldImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}');
-    // let Esri_WorldTerrain = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}', {maxZoom: 13});
     let Esri_WorldImagery = L.esri.basemapLayer('Imagery');
     let Esri_WorldTerrain = L.esri.basemapLayer('Terrain');
     let Esri_Imagery_Labels = L.esri.basemapLayer('ImageryLabels');
@@ -37,82 +35,6 @@ function basemaps() {
 }
 
 ////////////////////////////////////////////////////////////////////////  WMS LAYERS
-const bounds = {
-    'gldas': {
-        'Albedo_inst': '4,82',
-        'AvgSurfT_inst': '226,319',
-        'CanopInt_inst': '0,1',
-        'ECanop_tavg': '0,143',
-        'ESoil_tavg': '0,186',
-        'Evap_tavg': '-1,1',
-        'LWdown_f_tavg': '122,490',
-        'Lwnet_tavg': '-161,46',
-        'PotEvap_tavg': '-3,1001',
-        'Psurf_f_inst': '47070,104635',
-        'Qair_f_inst': '0,1',
-        'Qg_tavg': '-31,44',
-        'Qh_tavg': '-89,257',
-        'Qle_tavg': '-3,232',
-        'Qs_acc': '0,14',
-        'Qsb_acc': '0,12',
-        'Qsm_acc': '0,5',
-        'Rainf_f_tavg': '0,1',
-        'Rainf_tavg': '0,1',
-        'RootMoist_inst': '2,923',
-        'SWE_inst': '0,121743',
-        'SWdown_f_tavg': '0,398',
-        'SnowDepth_inst': '0,305',
-        'Snowf_tavg': '0,1',
-        'SoilTMP0_10cm_inst': '232,319',
-        'Swnet_tavg': '0,347',
-        'Tair_f_inst': '233,317',
-        'Tveg_tavg': '0,167',
-        'Wind_f_inst': '0,17'
-    },
-    'gfs': {
-        'al': '0,88',
-        '4lftx': '-16,29',
-        'cfrzr': '0,1',
-        'cicep': '0,0',
-        'crain': '0,1',
-        'csnow': '0,1',
-        'cape': '0,4687',
-        'cin': '-1128,1',
-        'acpcp': '0,41',
-        'cprat': '0,1',
-        'dlwrf': '59,516',
-        'dswrf': '0,981',
-        'fldcp': '0,1',
-        'landn': '0,1',
-        'lsm': '0,1',
-        'lhtfl': '-110,652',
-        'v-gwd': '-17,15',
-        'uflx': '-4,3',
-        'vflx': '-3,4',
-        'orog': '-237,6110',
-        'cpofp': '-51,100',
-        'hpbl': '16,6353',
-        'pevpr': '-35,2065',
-        'prate': '0,1',
-        'siconc': '0,1',
-        'shtfl': '-227,541',
-        'sde': '0,3',
-        'SUNSD': '0,21600',
-        'lftx': '-13,45',
-        'sp': '48173,103796',
-        't': '203,350',
-        'tp': '0,100',
-        'ulwrf': '95,741',
-        'uswrf': '0,765',
-        'vis': '0,24100',
-        'sdwe': '0,434',
-        'watr': '0,44',
-        'wilt': '0,1',
-        'gust': '0,33',
-        'u-gwd': '-7,7'
-    }
-};
-
 function newLayer() {
     let layer = $("#variables").val();
 
@@ -124,8 +46,12 @@ function newLayer() {
     }
 
     let cs_rng = bounds[model][layer];
-    if ($("#use_vals").is(":checked")) {
+    if ($("#use_csrange").is(":checked")) {
         cs_rng = String($("#cs_min").val()) + ',' + String($("#cs_max").val())
+    }
+    let update = true;
+    if ($("#use_dates").is(':checked')) {
+        update = false;
     }
 
     let wmsLayer = L.tileLayer.wms(wmsurl, {
@@ -144,9 +70,10 @@ function newLayer() {
 
     return L.timeDimension.layer.wms(wmsLayer, {
         name: 'time',
-        requestTimefromCapabilities: true,
-        updateTimeDimension: true,
+        updateTimeDimension: update,
+        requestTimefromCapabilities: update,
         updateTimeDimensionMode: 'replace',
+        setDefaultTime: update,
         cache: 20,
     }).addTo(mapObj);
 }
@@ -167,7 +94,6 @@ legend.onAdd = function () {
     if ($("#use_vals").is(":checked")) {
         cs_rng = String($("#cs_min").val()) + ',' + String($("#cs_max").val())
     }
-
 
     let div = L.DomUtil.create('div', 'legend');
     let url = wmsurl + "?REQUEST=GetLegendGraphic&LAYER=" + layer + "&PALETTE=" + $('#colorscheme').val() + "&COLORSCALERANGE=" + cs_rng;

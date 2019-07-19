@@ -6,10 +6,11 @@ from django.http import JsonResponse
 
 from .app import Earthobserver as App
 from .options import gldas_variables, timecoverage, get_charttypes, gfs_variables, wms_colors, geojson_colors,\
-    currentgfs, app_configuration, structure_byvars, get_eodatamodels, get_gfsdate
+    currentgfs, app_settings, structure_byvars, get_eodatamodels, get_gfsdate
 
 import os
 import datetime
+import logging
 
 
 @login_required()
@@ -56,7 +57,6 @@ def map(request):
             original=True,
             options=gldas_options,
         )
-
         dates = SelectInput(
             display_text='Time Interval',
             name='dates',
@@ -172,7 +172,7 @@ def map(request):
         'gjFlOp': gj_fillopacity,
 
         # metadata
-        'customsettings': app_configuration(),
+        'settings': app_settings(),
         'version': App.version,
     }
 
@@ -206,34 +206,45 @@ def data(request):
     files = [i for i in files if i.endswith('.nc4')]
     files.sort()
     gldas_months = len(files)
-    gldas_start = datetime.datetime.strptime(files[0], "GLDAS_NOAH025_M.A%Y%m.021.nc4").strftime("%B %Y")
-    gldas_end = datetime.datetime.strptime(files[-1], "GLDAS_NOAH025_M.A%Y%m.021.nc4").strftime("%B %Y")
+    if gldas_months != 0:
+        gldas_start = datetime.datetime.strptime(files[0], "GLDAS_NOAH025_M.A%Y%m.021.nc4").strftime("%B %Y")
+        gldas_end = datetime.datetime.strptime(files[-1], "GLDAS_NOAH025_M.A%Y%m.021.nc4").strftime("%B %Y")
+    else:
+        gldas_start = 'No available data'
+        gldas_end = 'No available data'
+
 
     timestamp = get_gfsdate()
-    if not timestamp == 'clobbered':
-        gfs_time = datetime.datetime.strptime(timestamp, "%Y%m%d%H")
-        gfs_time = gfs_time.strftime("%b %d, %I%p UTC")
+    if timestamp != 'none':
+        if timestamp == 'clobbered':
+            gfs_time = 'You attempted to overwrite existing data in a workflow run that didn\'t finish'
+        else:
+            gfs_time = datetime.datetime.strptime(timestamp, "%Y%m%d%H")
+            gfs_time = gfs_time.strftime("%b %d, %I%p UTC")
+
+        path = os.path.join(threddspath, 'gfs', timestamp, 'netcdfs')
+        files = os.listdir(path)
+        files = [i for i in files if i.endswith('.nc')]
+        files.sort()
+        num_files = len(files)
+        if num_files != 0:
+            gfs_steps = num_files
+
+            gfs_start = files[0].split('_')[1]
+            gfs_start = gfs_start.replace('.nc', '')
+            gfs_start = datetime.datetime.strptime(gfs_start, '%Y%m%d%H')
+            gfs_start = gfs_start.strftime("%B %d %Y at %H")
+
+            gfs_end = files[-1].split('_')[1]
+            gfs_end = gfs_end.replace('.nc', '')
+            gfs_end = datetime.datetime.strptime(gfs_end, '%Y%m%d%H')
+            gfs_end = gfs_end.strftime("%B %d %Y at %H")
+        else:
+            gfs_steps = 'No available data'
+            gfs_start = 'No available data'
+            gfs_end = 'No available data'
     else:
-        gfs_time = 'You attempted to overwrite existing data'
-
-    path = os.path.join(threddspath, 'gfs', timestamp, 'netcdfs')
-    files = os.listdir(path)
-    files = [i for i in files if i.endswith('.nc')]
-    files.sort()
-    num_files = len(files)
-    if num_files != 0:
-        gfs_steps = num_files
-
-        gfs_start = files[0].split('_')[1]
-        gfs_start = gfs_start.replace('.nc', '')
-        gfs_start = datetime.datetime.strptime(gfs_start, '%Y%m%d%H')
-        gfs_start = gfs_start.strftime("%B %d %Y at %H")
-
-        gfs_end = files[-1].split('_')[1]
-        gfs_end = gfs_end.replace('.nc', '')
-        gfs_end = datetime.datetime.strptime(gfs_end, '%Y%m%d%H')
-        gfs_end = gfs_end.strftime("%B %d %Y at %H")
-    else:
+        gfs_time = 'There is no recorded timestamp. Have you run the workflow before?'
         gfs_steps = 'No available data'
         gfs_start = 'No available data'
         gfs_end = 'No available data'
@@ -250,3 +261,35 @@ def data(request):
         'gfs_end': gfs_end,
     }
     return render(request, 'earthobserver/data.html', context)
+
+
+@login_required()
+def rungfs(request):
+    # Check for user permissions here rather than with a decorator so that we can log the failure
+    if not User.is_superuser:
+        logging.basicConfig(
+            filename=app_configuration()['logfile'], filemode='a', level=logging.INFO, format='%(message)s')
+        logging.info('A non-superuser tried to run this workflow on ' + datetime.datetime.utcnow().strftime("%D at %R"))
+        logging.info('The user was ' + str(request.user))
+        return JsonResponse({'Unauthorized User': 'You do not have permission to run the workflow. Ask a superuser.'})
+
+    # enable logging to track the progress of the workflow and for debugging
+    logging.basicConfig(filename=app_configuration()['logfile'], filemode='w', level=logging.INFO, format='%(message)s')
+    logging.info('Workflow initiated on ' + datetime.datetime.utcnow().strftime("%D at %R"))
+
+    # Set the clobber option so that the right folders get deleted/regenerated in the set_environment functions
+    if 'clobber' in request.GET:
+        clobber = request.GET['clobber'].lower()
+        if clobber in ['yes', 'true']:
+            logging.info('You chose the clobber option: the timestamp and all data folders will be overwritten')
+            wrksp = App.get_app_workspace().path
+            timestamps = os.listdir(wrksp)
+            timestamps = [stamp for stamp in timestamps if stamp.endswith('timestamp.txt')]
+            for stamp in timestamps:
+                with open(os.path.join(wrksp, stamp), 'w') as file:
+                    file.write('clobbered')
+            logging.info('Files marked for clobber')
+
+    gfs_status = run_gfs_workflow()
+
+    return JsonResponse({'gfs status': gfs_status})

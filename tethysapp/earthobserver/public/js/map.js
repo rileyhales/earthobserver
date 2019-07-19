@@ -65,35 +65,119 @@ function update() {
 }
 
 $("#variables").change(function () {
-    clearMap();
-    update();
-    getDrawnChart(drawnItems);
+    if (model === 'gfs') {
+        let level_div = $("#levels");
+        level_div.empty();
+        $.ajax({
+            url: '/apps/gfs/ajax/getLevelsForVar/',
+            async: true,
+            data: JSON.stringify({variable: this.options[this.selectedIndex].value}),
+            dataType: 'json',
+            contentType: "application/json",
+            method: 'POST',
+            success: function (result) {
+                let levels = result['levels'];
+                for (let i = 0; i < levels.length; i++) {
+                    level_div.append('<option value="' + levels[i][1] + '">' + levels[i][0] + "</option>");
+                }
+                clearMap();
+                update();
+                getDrawnChart(drawnItems);
+            },
+        });
+    } else {
+        clearMap();
+        update();
+        getDrawnChart(drawnItems);
+    }
 });
-
-$("#dates").change(function () {
-    clearMap();
-    update();
-    getDrawnChart(drawnItems);
-});
-
-$('#charttype').change(function () {
-    makechart();
-});
-
-// todo add this
-// $("#levels").change(function () {
-//     clearMap();
-//     update();
-// });
+$("#dates").change(function () {clearMap();update();getDrawnChart(drawnItems);});
+// custom dates control
+$('#charttype').change(function () {makechart();});
+$("#levels").change(function () {clearMap();update();});
 
 $("#display").click(function() {
     $("#displayopts").toggle();
 });
-$("#use_vals").change(function () {clearMap();update()});
-$('#colorscheme').change(function () {clearMap();update();});
+$("#use_csrange").change(function () {clearMap();update()});
+$('#colorscheme').change(function () {clearMap();update()});
 $("#opacity").change(function () {layerObj.setOpacity($(this).val())});
-$('#gjClr').change(function () {styleGeoJSON();});
-$("#gjOp").change(function () {styleGeoJSON();});
-$("#gjWt").change(function () {styleGeoJSON();});
-$('#gjFlClr').change(function () {styleGeoJSON();});
-$("#gjFlOp").change(function () {styleGeoJSON();});
+$('#gjClr').change(function () {styleGeoJSON()});
+$("#gjOp").change(function () {styleGeoJSON()});
+$("#gjWt").change(function () {styleGeoJSON()});
+$('#gjFlClr').change(function () {styleGeoJSON()});
+$("#gjFlOp").change(function () {styleGeoJSON()});
+
+function customdates() {
+    let check = $("#use_dates");
+    if (!check.is(':checked')) {
+        clearMap();
+        update();
+        return
+    }
+    let start = $("#startdate").val();
+    let end = $("#enddate").val();
+
+    // check the formatting of the user's input
+    if (/[a-z]/.test(start) || /[a-z]/.test(end)) {
+        alert('You may only use numbers to specify a date');
+        check.prop('checked', false);
+        return
+    } else if (start.length !== 7 || end.length !== 7) {
+        alert('You must use mm/yyyy format for your dates (7 characters)');
+        check.prop('checked', false);
+        return
+    }
+    if (start.split('/').length !== 2 || end.split('/').length !== 2) {
+        alert('Only use 1 / character to divide months and years in the mm/yyyy format');
+        check.prop('checked', false);
+        return
+    }
+
+    // parse the date and check the validity of the given dates
+    start = moment(start, 'MM/YYYY', true);
+    end = moment(end, 'MM/YYYY', true);
+    let now = moment();
+    if (!start._isValid || !end._isValid) {
+        alert('Pick a number 1-12 for months and 2000 through the current for the year');
+        check.prop('checked', false);
+        return
+    } else if (start >= end) {
+        alert('The start date must be before the end date');
+        check.prop('checked', false);
+        return
+    } else if (start >= now || end >= now) {
+        alert('The start and end date must be before the current month');
+        check.prop('checked', false);
+        return
+    } else if (start.year() <= 1999 || end.year() <= 1999) {
+        alert('The start and end date must be after 2000');
+        check.prop('checked', false);
+        return
+    }
+    $("#dates").val('');
+
+    // mapObj.timeDimension.lowerLimitTime = start.format('x');
+    // mapObj.timeDimension.upperLimitTime = end.format('x');
+    // layerObj.timeDimension.lowerLimitTime = start.format('x');
+    // layerObj.timeDimension.upperLimitTime = end.format('x');
+
+    // console.log(mapObj);
+    // console.log(layerObj);
+
+    // let times = [start.format('x')];
+    // for (let i = 1; i <= 148; i++) {
+    //     times.push(start.add(1, 'M').format('x'))
+    // }
+
+    // clearMap();
+    // mapObj.timeDimension.timeInterval = start.format() + '/' + end.format();
+    // update();
+    // mapObj.timeDimension.setAvailableTimes(times, 'replace');
+    // layerObj.timeDimension.setAvailableTimes(times, 'replace');
+    // let availabletimes = mapObj.timeDimension._availableTimes;
+    // getDrawnChart();
+
+    // console.log(mapObj);
+    // console.log(layerObj);
+}

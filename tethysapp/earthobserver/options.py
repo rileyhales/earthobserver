@@ -3,7 +3,7 @@ import os
 import datetime
 
 
-def app_configuration():
+def app_settings():
     """
     Gets the settings for the app for use in other functions and ajax for leaflet
     Dependencies: os, App (app)
@@ -14,7 +14,7 @@ def app_configuration():
         'threddsurl': App.get_custom_setting("Thredds WMS URL"),
         'geoserverurl': App.get_custom_setting("Geoserver Workspace URL"),
         'timestamp': get_gfsdate(),
-        'logfile': os.path.join(App.get_app_workspace().path, 'workflow.log')
+        'logfile': os.path.join(App.get_app_workspace().path, 'gfsworkflow.log')
     }
 
 
@@ -27,15 +27,19 @@ def get_eodatamodels():
 
 def get_gfsdate():
     thredds = App.get_custom_setting("Local Thredds Folder Path")
-    with open(os.path.join(thredds, 'gfs', 'last_run.txt'), 'r') as file:
-        return file.read()
+    file = os.path.join(thredds, 'gfs', 'last_run.txt')
+    if os.path.exists(file):
+        with open(os.path.join(thredds, 'gfs', 'last_run.txt'), 'r') as file:
+            return file.read()
+    else:
+        return 'none'
 
 
 def currentgfs():
     # if there is actually data in the app, then read the file with the timestamp on it
-    path = App.get_custom_setting("Local Thredds Folder Path")
+    thredds = App.get_custom_setting("Local Thredds Folder Path")
     timestamp = get_gfsdate()
-    path = os.path.join(path, 'gfs', timestamp)
+    path = os.path.join(thredds, 'gfs', timestamp)
     if os.path.exists(path):
         timestamp = datetime.datetime.strptime(timestamp, "%Y%m%d%H")
         return "This GFS data from " + timestamp.strftime("%b %d, %I%p UTC")
